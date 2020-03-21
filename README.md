@@ -19,6 +19,16 @@ The project is configured using Cmake.
     
 Depending on the target you chose in Cmake, you will get either a Visual Studio solution, an Xcode workspace or a set of Makefiles. You can build the main executable using the `MIDIVisualizer`sub-project/target. If you update the images or shaders in the `resources` directory, you will have to repackage them with the executable, by building the `Packaging` sub-project/target. MIDIVisualizer depends on the [GLFW3 library](http://www.glfw.org) and the [Native File Dialog library](https://github.com/mlabbe/nativefiledialog), both are included in the repository and built along with the main executable.
 
+For example, you can compile MIDIVisualizer on Ubuntu as follows:
+
+    sudo apt-get -yqq install git cmake xorg-dev gtk+-3.0
+    git clone https://github.com/ekuiter/MIDIVisualizer
+    cd MIDIVisualizer
+    mkdir build
+    cd build
+    cmake ..
+    make
+
 ## Command-line use
 ### macOS and Linux
 
