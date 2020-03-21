@@ -142,7 +142,7 @@ void State::load(const std::string & path){
 	
 	// MIDIVIZ_VERSION_MAJOR == 3, MIDIVIZ_VERSION_MINOR == 1
 	// Added quality level.
-	if(majVersion >= 3  && minVersion >= 1){
+	if(majVersion > 3 || (majVersion == 3 && minVersion >= 1)){
 		std::string qualityName;;
 		configFile >> qualityName;
 		if(Quality::names.count(qualityName) > 0){
@@ -152,14 +152,14 @@ void State::load(const std::string & path){
 	
 	// MIDIVIZ_VERSION_MAJOR == 3, MIDIVIZ_VERSION_MINOR == 2
 	// Added attenuation factor.
-	if(majVersion >= 3  && minVersion >= 2){
+	if(majVersion > 3 || (majVersion == 3 && minVersion >= 2)){
 		configFile >> attenuation ;
 	}
 	
 	// MIDIVIZ_VERSION_MAJOR == 3, MIDIVIZ_VERSION_MINOR == 3
 	minorColor = 0.8f*baseColor;
 	flashColor = baseColor;
-	if(majVersion >= 3  && minVersion >= 3){
+	if(majVersion > 3 || (majVersion == 3 && minVersion >= 3)){
 		configFile >> showNotes;
 		configFile >> background.linesColor[0] >> background.linesColor[1] >> background.linesColor[2] ;
 		configFile >> background.textColor[0] >> background.textColor[1] >> background.textColor[2] ;
@@ -170,7 +170,7 @@ void State::load(const std::string & path){
 	}
 
 	// MIDIVIZ_VERSION_MAJOR == 3, MIDIVIZ_VERSION_MINOR == 5
-	if (majVersion >= 3 && minVersion >= 5) {
+	if (majVersion > 3 || (majVersion == 3 && minVersion >= 5)) {
 		configFile >> prerollTime;
 		configFile >> showScore;
 		std::string layersList;
@@ -187,7 +187,7 @@ void State::load(const std::string & path){
 	}
 
 	// MIDIVIZ_VERSION_MAJOR == 4, MIDIVIZ_VERSION_MINOR == 0
-	if (majVersion >= 4 && minVersion >= 0) {
+	if (majVersion >= 4) {
 		configFile >> background.image;
 		configFile >> background.imageAlpha;
 		configFile >> background.imageBehindKeyboard;
@@ -195,7 +195,7 @@ void State::load(const std::string & path){
 	}
 
 	// MIDIVIZ_VERSION_MAJOR == 4, MIDIVIZ_VERSION_MINOR == 1
-	if (majVersion >= 4 && minVersion >= 1) {
+	if (majVersion > 4 || (majVersion == 4 && minVersion >= 1)) {
 		configFile >> keyboard.customKeyColors;
 		configFile >> keyboard.majorColor[0] >> keyboard.majorColor[1] >> keyboard.majorColor[2];
 		configFile >> keyboard.minorColor[0] >> keyboard.minorColor[1] >> keyboard.minorColor[2];
