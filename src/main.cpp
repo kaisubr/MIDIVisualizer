@@ -11,15 +11,14 @@
 
 #include "rendering/Renderer.h"
 
-#define INITIAL_SIZE_WIDTH 1280
-#define INITIAL_SIZE_HEIGHT 600
+#define INITIAL_SIZE_WIDTH 1920
+#define INITIAL_SIZE_HEIGHT 1080
 
 
 void printHelp(){
 	std::cout << "---- Infos ---- MIDIVisualizer v" << MIDIVIZ_VERSION_MAJOR << "." << MIDIVIZ_VERSION_MINOR << " --------" << std::endl
 	<< "Visually display a midi file in realtime." << std::endl
-	<< "Usage: midiviz path/to/file.mid [s] [r g b]" << std::endl
-	<< "\t(where s is a scaling factor and r,g,b are float color components in [0,1])" << std::endl
+	<< "Usage: midiviz path/to/file.mid [state [output_directory]]" << std::endl
 	<< "Keys:\tp\tplay/pause" << std::endl
 	<< "\tr\treset" << std::endl
 	<< "--------------------------------------------" << std::endl;
@@ -53,9 +52,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 
 /// The main function
 
-int main( int argc, char** argv) {
-	
-	if(argc > 3 && argc != 5 && argc != 6){
+int main(int argc, char** argv) {
+
+	if (argc != 2 && argc != 3 && argc != 4) {
 		std::cerr << "[ERROR]: wrong number of arguments" << std::endl;
 		return 1;
 	}
@@ -91,44 +90,22 @@ int main( int argc, char** argv) {
 		std::cerr << "OpenGL 3.2 not supported\n" << std::endl;
 		return -1;
 	}
-	
+
 	// Read arguments.
 	std::string midiFilePath;
-	if(argc<2){
-		// We are in direct-to-gui mode.
-		nfdchar_t *outPath = NULL;
-		nfdresult_t result = NFD_OpenDialog( NULL, NULL, &outPath );
-		if(result == NFD_OKAY){
-			midiFilePath = std::string(outPath);
-		} else if(result == NFD_CANCEL){
-			return 0;
-		} else {
-			return 10;
-		}
-	} else {
-		// We are in command-line mode.
-		printHelp();
-		midiFilePath = std::string(argv[1]);
-	}
-	glm::vec3 baseColor = 1.35f*glm::vec3(0.57f,0.19f,0.98f);
+	// We are in command-line mode.
+	printHelp();
+	midiFilePath = std::string(argv[1]);
+	glm::vec3 baseColor = 1.35f*glm::vec3(0.57f, 0.19f, 0.98f);
 	float scale = 0.5;
-	if(argc == 3 || argc == 6 ){
-		scale = std::stof(argv[2]);
-	}
-	if(argc == 5){
-		baseColor[0] = std::stof(argv[2]);
-		baseColor[1] = std::stof(argv[3]);
-		baseColor[2] = std::stof(argv[4]);
-	} else if(argc == 6){
-		baseColor[0] = std::stof(argv[3]);
-		baseColor[1] = std::stof(argv[4]);
-		baseColor[2] = std::stof(argv[5]);
-	}
-	
+
 	// Create the renderer.
 	Renderer renderer;
 	renderer.init(INITIAL_SIZE_WIDTH,INITIAL_SIZE_HEIGHT);
 	renderer.setColorAndScale(baseColor, scale);
+
+	if (argc >= 3)
+		renderer.loadState(std::string(argv[2]));
 	
 	try {
 		// Load midi file, graphics setup.
@@ -139,6 +116,12 @@ int main( int argc, char** argv) {
 		renderer.clean();
 		glfwTerminate();
 		return 3;
+	}
+
+	if (argc == 4) {
+		glfwHideWindow(window);
+		renderer.renderFile(std::string(argv[3]), 60);
+		return 0;
 	}
 	
 	// Define utility pointer for callbacks (can be obtained back from inside the callbacks).

@@ -28,7 +28,9 @@ public:
 	void init(int width, int height);
 	
 	void setColorAndScale(const glm::vec3 & baseColor, const float scale);
-	
+
+	void loadState(const std::string & stateFilePath);
+
 	void loadFile(const std::string & midiFilePath);
 	
 	/// Draw function
@@ -43,6 +45,7 @@ public:
 	/// Handle keyboard inputs
 	void keyPressed(int key, int action);
 
+	void renderFile(const std::string & outputDirPath, const float frameRate);
 
 private:
 	
@@ -81,8 +84,6 @@ private:
 	void showLayers();
 
 	void applyAllSettings();
-	
-	void renderFile(const std::string & outputDirPath, const float frameRate);
 	
 	void reset();
 

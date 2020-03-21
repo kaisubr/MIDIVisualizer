@@ -108,6 +108,10 @@ void Renderer::setColorAndScale(const glm::vec3 &baseColor, const float scale) {
 	_state.particles.color = _state.baseColor;
 }
 
+void Renderer::loadState(const std::string & stateFilePath) {
+	_state.load(stateFilePath);
+}
+
 void Renderer::loadFile(const std::string &midiFilePath) {
 	// Player.
 	_timer = -_state.prerollTime;
