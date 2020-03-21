@@ -10,8 +10,6 @@ On all platforms, you can now **run the application by simply double-clicking** 
 
 Press `p` to play/pause the track, `r` to restart at the beginning of the track, and `i` to show/hide the *Settings* panel. 
 
-Binaries for macOS and Windows are available in the [Releases tab](https://github.com/kosua20/MIDIVisualizer/releases).
-
 ## Compilation
 
 The project is configured using Cmake.
@@ -24,32 +22,15 @@ Depending on the target you chose in Cmake, you will get either a Visual Studio 
 ## Command-line use
 ### macOS and Linux
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with optional settings such as the scale and color of the notes (by setting the red, green and blue components as numbers between 0.0 and 1.0).
+You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory for PNG export.
 
-    ./MIDIVisualizer path/to/file.mid [scale] [red green blue]
+    ./MIDIVisualizer path/to/file.mid [state [output_directory]]
     
 
 ### Windows
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with optional settings such as the scale and color of the notes (by setting the red, green and blue components as numbers between 0.0 and 1.0).
+You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory for PNG export.
 
-    MIDIVisualizer.exe path\to\file.mid [scale] [red green blue]
-
-
-## Development
-
-The main development steps were:
-
-- loading a MIDI file, and parsing the notes contained,
-- displaying a scrolling score with these notes,
-- adding visual effects to embellish the visualization.
-
-More details [on my blog](http://blog.simonrodriguez.fr/articles/28-12-2016_midi_visualization_a_case_study.html).
-
-![Result image](result2.png) 
-
-![Result image](result3.png) 
-
- 
+    MIDIVisualizer.exe path\to\file.mid [state [output_directory]]
 
  
