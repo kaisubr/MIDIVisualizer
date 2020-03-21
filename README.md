@@ -22,15 +22,15 @@ Depending on the target you chose in Cmake, you will get either a Visual Studio 
 ## Command-line use
 ### macOS and Linux
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory for PNG export.
+You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory and resolution for PNG export.
 
-    ./MIDIVisualizer path/to/file.mid [state [output_directory]]
+    ./MIDIVisualizer path/to/file.mid [state [output_directory width height]]
     
 
 ### Windows
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory for PNG export.
+You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory and resolution for PNG export.
 
-    MIDIVisualizer.exe path\to\file.mid [state [output_directory]]
+    MIDIVisualizer.exe path\to\file.mid [state [output_directory width height]]
 
  
