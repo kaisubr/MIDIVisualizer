@@ -658,6 +658,7 @@ void Renderer::showLayers() {
 
 void Renderer::renderFile(const std::string &outputDirPath,
 	const float frameRate) {
+	_exportFramerate = frameRate;
 	_showGUI = false;
 	// Reset.
 	_timer = -_state.prerollTime;
