@@ -18,7 +18,7 @@
 void printHelp(){
 	std::cout << "---- Infos ---- MIDIVisualizer v" << MIDIVIZ_VERSION_MAJOR << "." << MIDIVIZ_VERSION_MINOR << " --------" << std::endl
 	<< "Visually display a midi file in realtime." << std::endl
-	<< "Usage: midiviz path/to/file.mid [state [output_directory width height]]" << std::endl
+	<< "Usage: midiviz [path/to/file.mid [state [output_directory width height]]]" << std::endl
 	<< "Keys:\tp\tplay/pause" << std::endl
 	<< "\tr\treset" << std::endl
 	<< "--------------------------------------------" << std::endl;
@@ -54,7 +54,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 
 int main(int argc, char** argv) {
 
-	if (argc < 2 && argc > 6 || argc == 4 || argc == 5) {
+	if (argc > 6 || argc == 4 || argc == 5) {
 		std::cerr << "[ERROR]: wrong number of arguments" << std::endl;
 		return 1;
 	}
@@ -95,9 +95,25 @@ int main(int argc, char** argv) {
 
 	// Read arguments.
 	std::string midiFilePath;
-	// We are in command-line mode.
-	printHelp();
-	midiFilePath = std::string(argv[1]);
+	if (argc < 2) {
+		// We are in direct-to-gui mode.
+		nfdchar_t *outPath = NULL;
+		nfdresult_t result = NFD_OpenDialog(NULL, NULL, &outPath);
+		if (result == NFD_OKAY) {
+			midiFilePath = std::string(outPath);
+		}
+		else if (result == NFD_CANCEL) {
+			return 0;
+		}
+		else {
+			return 10;
+		}
+	}
+	else {
+		// We are in command-line mode.
+		printHelp();
+		midiFilePath = std::string(argv[1]);
+	}
 	glm::vec3 baseColor = 1.35f*glm::vec3(0.57f, 0.19f, 0.98f);
 	float scale = 0.5;
 

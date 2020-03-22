@@ -2,7 +2,7 @@
 
 A small MIDI visualizer, written in C++/OpenGL. 
 
-![Result image](result1.png)  
+![Screenshot](screenshot.png)
 
 ## Usage
 
@@ -17,7 +17,7 @@ The project is configured using Cmake.
     mkdir build && cd build
     cmake ..
     
-Depending on the target you chose in Cmake, you will get either a Visual Studio solution, an Xcode workspace or a set of Makefiles. You can build the main executable using the `MIDIVisualizer`sub-project/target. If you update the images or shaders in the `resources` directory, you will have to repackage them with the executable, by building the `Packaging` sub-project/target. MIDIVisualizer depends on the [GLFW3 library](http://www.glfw.org) and the [Native File Dialog library](https://github.com/mlabbe/nativefiledialog), both are included in the repository and built along with the main executable.
+Depending on the target you chose in Cmake, you will get either a Visual Studio solution (e.g., `cmake .. -G "Visual Studio 15"`), an Xcode workspace or a set of Makefiles. You can build the main executable using the `MIDIVisualizer`sub-project/target. If you update the images or shaders in the `resources` directory, you will have to repackage them with the executable, by building the `Packaging` sub-project/target. MIDIVisualizer depends on the [GLFW3 library](http://www.glfw.org) and the [Native File Dialog library](https://github.com/mlabbe/nativefiledialog), both are included in the repository and built along with the main executable.
 
 For example, you can compile MIDIVisualizer on Ubuntu as follows:
 
@@ -30,17 +30,7 @@ For example, you can compile MIDIVisualizer on Ubuntu as follows:
     make
 
 ## Command-line use
-### macOS and Linux
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory and resolution for PNG export.
+You can run the executable from the command-line, specifying a MIDI file to read, along with a state file (INI file which may be exported within MIDI Visualizer) and directory and resolution for PNG export.
 
-    ./MIDIVisualizer path/to/file.mid [state [output_directory width height]]
-    
-
-### Windows
-
-You can run the executable from the command-line, specifying a MIDI file to read, along with an optional state file (INI file which may be exported within MIDI Visualizer) and directory and resolution for PNG export.
-
-    MIDIVisualizer.exe path\to\file.mid [state [output_directory width height]]
-
- 
+    ./MIDIVisualizer [path/to/file.mid [state [output_directory width height]]]
