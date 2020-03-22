@@ -6,11 +6,25 @@
 // Adaptation to GNU/Linux by Oscar Aceña
 // See COPYING for license information
 
-#include <netinet/in.h>
-
 #include "MidiUtil.h"
 
 using namespace std;
+
+uint32_t ntohl(uint32_t n) {
+    unsigned char *np = (unsigned char *)&n;
+
+    return ((uint32_t)np[0] << 24) |
+        ((uint32_t)np[1] << 16) |
+        ((uint32_t)np[2] << 8) |
+        (uint32_t)np[3];
+}
+
+uint16_t ntohs(uint16_t n) {
+    unsigned char *np = (unsigned char *)&n;
+
+    return ((uint16_t)np[0] << 8) |
+        (uint16_t)np[1];
+}
 
 unsigned long BigToSystem32(unsigned long x) {
   return ntohl(x);
