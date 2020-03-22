@@ -5,7 +5,9 @@ in INTERFACE {
 } In ;
 
 uniform float time;
-uniform float secondsPerMeasure;
+#define numBarLines 10
+uniform int barLineIndex;
+uniform float barLines[numBarLines];
 uniform vec2 inverseScreenSize;
 uniform bool useDigits = true;
 uniform bool useHLines = true;
@@ -89,19 +91,13 @@ void main(){
 	
 	vec2 scale = 1.5*vec2(64.0,50.0*inverseScreenSize.x/inverseScreenSize.y);
 	
-	// Text on the side.
-	int currentMesure = int(floor(time/secondsPerMeasure));
-	// How many mesures do we check.
-	int count = int(ceil(0.75*(2.0/mainSpeed)))+2;
-	
-	for(int i = 0; i < count; i++){
-		// Compute position of the measure currentMesure+i.
-		vec2 position = vec2(0.005,bottomLimit + (secondsPerMeasure*(currentMesure+i) - time)*mainSpeed*0.5);
+	for(int i = 0; i < numBarLines; i++){
+		vec2 position = vec2(0.005,bottomLimit + (barLines[i] - time)*mainSpeed*0.5);
 		
 		// Compute color for the number display, and for the horizontal line.
-		float numberIntensity = useDigits ? printNumber(currentMesure + i,position, In.uv, scale) : 0.0;
+		float numberIntensity = useDigits ? printNumber(barLineIndex + i + 1,position, In.uv, scale) : 0.0;
 		bgColor = mix(bgColor, textColor, numberIntensity);
-		float lineIntensity = useHLines ? (0.25*(step(abs(In.uv.y - position.y - 0.5 / scale.y), inverseScreenSize.y))) : 0.0;
+		float lineIntensity = useHLines ? (0.25*(step(abs(In.uv.y - position.y), inverseScreenSize.y))) : 0.0;
 		bgColor = mix(bgColor, linesColor, lineIntensity);
 	}
 	

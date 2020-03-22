@@ -2,7 +2,7 @@
 #define MIDIScene_h
 #include <gl3w/gl3w.h>
 #include <glm/glm.hpp>
-#include "../midi/MIDIFile.h"
+#include "../libmidi/Midi.h"
 #include "State.h"
 
 
@@ -13,9 +13,9 @@ public:
 	~MIDIScene();
 
 	/// Init function
-	MIDIScene(const std::string & midiFilePath);
+	MIDIScene(const std::string & midiFilePath, float prerollTime);
 	
-	void updatesActiveNotes(double time);
+	void updatesActiveNotes(double time, double delta);
 	
 	/// Draw function
 	void drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & majorColor, const glm::vec3 & minorColor, bool prepass);
@@ -29,7 +29,7 @@ public:
 	/// Clean function
 	void clean();
 
-	const MIDIFile& midiFile() { return _midiFile; }
+	const Midi& midi() { return _midi; }
 	
 	void setScaleAndMinorWidth(const float scale, const float minorWidth);
 
@@ -37,7 +37,7 @@ public:
 	
 	double duration(){ return _duration; };
 	
-	void resetParticles();
+	void reset(float prerollTime);
 
 private:
 	
@@ -72,12 +72,9 @@ private:
 		float elapsed = 0.0f;
 	};
 	std::vector<Particles> _particles;
-	double _previousTime;
 
-	MIDIFile _midiFile;
-	
-	
-	
+	Midi _midi;
+	TranslatedNoteSet _notes;
 };
 
 #endif

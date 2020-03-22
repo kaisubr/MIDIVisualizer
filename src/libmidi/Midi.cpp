@@ -162,6 +162,7 @@ Midi Midi::ReadFromStream(istream &stream) {
    int bar_no = 0;
    while (bar_usec <= len)
    {
+       // TODO: assumes 4/4 measure (this only affects bar lines, though)
        bar_usec = m.GetEventPulseInMicroseconds(bar_no*pulses_per_quarter_note*4, pulses_per_quarter_note);
        bar_line_usecs.push_back(bar_usec);
        bar_no++;

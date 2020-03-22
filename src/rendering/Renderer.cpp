@@ -118,14 +118,13 @@ void Renderer::loadFile(const std::string &midiFilePath) {
 	_shouldPlay = false;
 
 	// Init objects.
-	_scene = std::make_shared<MIDIScene>(midiFilePath);
-	_score = std::make_shared<Score>(_scene->midiFile().tracks[0].secondsPerMeasure);
+	_scene = std::make_shared<MIDIScene>(midiFilePath, _state.prerollTime);
+	_score = std::make_shared<Score>(_scene->midi().GetBarLines());
 
 	applyAllSettings();
 }
 
 void Renderer::draw(const float currentTime) {
-
 	if (_performExport > 0) {
 		// Let a bit of time at ImGui to display the modal message.
 		if (_performExport < 10) {
@@ -163,10 +162,11 @@ void Renderer::draw(const float currentTime) {
 
 	// Compute the time elapsed since last frame, or keep the same value if
 	// playback is disabled.
+	float delta = _shouldPlay ? (currentTime - _timerStart - _timer) : 0;
 	_timer = _shouldPlay ? (currentTime - _timerStart) : _timer;
 
 	// Update active notes listing (for particles).
-	_scene->updatesActiveNotes(_timer);
+	_scene->updatesActiveNotes(_timer, delta);
 
 	const glm::vec2 invSizeFb = 1.0f / glm::vec2(_finalFramebuffer->_width, _finalFramebuffer->_height);
 
@@ -258,7 +258,7 @@ void Renderer::drawParticles(const glm::vec2 & invSize) {
 }
 
 void Renderer::drawScore(const glm::vec2 & invSize) {
-	_score->draw(_timer, invSize);
+	_score->_draw(_timer, invSize);
 }
 
 void Renderer::drawKeyboard(const glm::vec2 & invSize) {
@@ -298,8 +298,8 @@ void Renderer::drawGUI(const float currentTime) {
 			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 			const std::string versionString = std::string("MIDIVisualizer v") + std::to_string(MIDIVIZ_VERSION_MAJOR) + "." + std::to_string(MIDIVIZ_VERSION_MINOR);
 			ImGui::TextUnformatted(versionString.c_str());
-			ImGui::TextUnformatted("Created by S. Rodriguez (kosua20)");
-			ImGui::TextUnformatted("github.com/kosua20/MIDIVisualizer");
+			ImGui::TextUnformatted("Created by Elias Kuiter (ekuiter)");
+			ImGui::TextUnformatted("github.com/ekuiter/MIDIVisualizer");
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
@@ -595,9 +595,6 @@ void Renderer::drawGUI(const float currentTime) {
 			ImGui::SameLine();
 			ImGui::TextDisabled("(press D to hide)");
 			ImGui::Text("%.1f FPS / %.1f ms", ImGui::GetIO().Framerate, ImGui::GetIO().DeltaTime * 1000.0f);
-			if (ImGui::Button("Print MIDI content to console")) {
-				_scene->midiFile().printTracks();
-			}
 		}
 	}
 	ImGui::End();
@@ -801,5 +798,6 @@ void Renderer::keyPressed(int key, int action) {
 void Renderer::reset() {
 	_timer = -_state.prerollTime;
 	_timerStart = DEBUG_SPEED * float(glfwGetTime()) + (_shouldPlay ? _state.prerollTime : 0.0f);
-	_scene->resetParticles();
+	_score->reset();
+	_scene->reset(_state.prerollTime);
 }

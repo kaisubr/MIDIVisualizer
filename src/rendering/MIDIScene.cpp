@@ -15,13 +15,30 @@
 #undef MAX
 #endif
 
+static std::vector<bool> noteIsMinor = {
+	false, true, false, false, true, false, true, false, false, true, false,
+	true, false, true, false, false, true, false, true, false, false, true,
+	false, true, false, true, false, false, true, false, true, false, false,
+	true, false, true, false, true, false, false, true, false, true, false,
+	false, true, false, true, false, true, false, false, true, false, true,
+	false, false, true, false, true, false, true, false, false, true, false,
+	true, false, false, true, false, true, false, true, false, false, true,
+	false, true, false, false, true, false, true, false, true, false, false };
+
+std::vector<short> noteShift = {
+	0, 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 10, 10, 11,
+	12, 12, 13, 13, 14, 14, 15, 16, 16, 17, 17, 18, 19, 19, 20, 20, 21, 21, 22, 23,
+	23, 24, 24, 25, 26, 26, 27, 27, 28, 28, 29, 30, 30, 31, 31, 32, 33, 33, 34, 34,
+	35, 35, 36, 37, 37, 38, 38, 39, 40, 40, 41, 41, 42, 42, 43, 44, 44, 45, 45, 46,
+	47, 47, 48, 48, 49, 49, 50, 51
+};
+
 MIDIScene::~MIDIScene(){}
 
-MIDIScene::MIDIScene(const std::string & midiFilePath){
-	
+MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi(Midi::ReadFromFile(midiFilePath)) {
 	// MIDI processing.
-	_midiFile = MIDIFile(midiFilePath);
-	
+	_midi.Reset(prerollTime * 1000000, 0);
+	_notes = _midi.Notes();
 	
 	// Load geometry and notes shared data.
 	std::vector<float> vertices = {-0.5,-0.5, 0.5, -0.5, 0.5,0.5, -0.5, 0.5};
@@ -29,25 +46,16 @@ MIDIScene::MIDIScene(const std::string & midiFilePath){
 	_primitiveCount = indices.size();
 	
 	std::vector<float> data;
-	auto notesM = _midiFile.tracks[0].getNotes(majorNotes);
-	
-	_duration = 0.0;
-	for(auto& note : notesM){
-		data.push_back(float(note.note));
-		data.push_back(float(note.start));
-		data.push_back(float(note.duration));
-		data.push_back(0.0f);
-		_duration = std::max(_duration, note.start + note.duration);
+	for (auto& note : _notes) {
+		if (note.note_id >= 21 && note.note_id <= 108) {
+			data.push_back(float(noteShift[note.note_id - 21]));
+			data.push_back(note.start / 1000000.0f);
+			data.push_back((note.end - note.start) / 1000000.0f);
+			data.push_back(noteIsMinor[note.note_id - 21] ? 1.0f : 0.0f);
+		}
 	}
-	auto notesm = _midiFile.tracks[0].getNotes(minorNotes);
-	for(auto& note : notesm){
-		data.push_back(float(note.note));
-		data.push_back(float(note.start));
-		data.push_back(float(note.duration));
-		data.push_back(1.0f);
-		_duration = std::max(_duration, note.start + note.duration);
-	}
-	_notesCount = notesM.size() + notesm.size();
+	_duration = _midi.GetSongLengthInMicroseconds() / 1000000.0f;
+	_notesCount = _midi.AggregateNoteCount();
 	std::cout << "[INFO]: Final track duration " << _duration << " sec." << std::endl;
 	
 	// Create an array buffer to host the geometry data.
@@ -180,7 +188,6 @@ MIDIScene::MIDIScene(const std::string & midiFilePath){
 
 	// Prepare actives notes array.
 	_actives = std::vector<int>(88, 0);
-	_previousTime = 0.0;
 	// Particle systems pool.
 	_particles = std::vector<Particles>(256);
 }
@@ -206,7 +213,7 @@ void MIDIScene::setParticlesParameters(const float speed, const float expansion)
 	glUseProgram(0);
 }
 
-void MIDIScene::updatesActiveNotes(double time){
+void MIDIScene::updatesActiveNotes(double time, double delta){
 	// Update the particle systems lifetimes.
 	for(auto & particle : _particles){
 		// Give a bit of a head start to the animation.
@@ -217,35 +224,75 @@ void MIDIScene::updatesActiveNotes(double time){
 			particle.duration = particle.start = particle.elapsed = 0.0f;
 		}
 	}
-	// Get notes actives.
-	auto actives = std::vector<ActiveNoteInfos>(88);
-	_midiFile.getNotesActive(actives, time, 0);
-	for(int i = 0; i < 88; ++i){
-		const auto & note = actives[i];
-		_actives[i] = int(note.enabled);
-		// Check if the note was triggered at this frame.
-		if(note.start > _previousTime && note.start <= time){
+
+	// Move notes, time tracking, everything
+	// delta_microseconds = 0 means, that we are on pause
+	MidiEventListWithTrackId evs = _midi.Update((microseconds_t) (delta * 1000000));
+
+	// These cycle is for keyboard updates (not falling keys)
+	const size_t length = evs.size();
+	for(size_t i = 0; i < length; ++i) {
+	  const size_t &track_id = evs[i].first;
+	  const MidiEvent &ev = evs[i].second;
+
+	  if ((ev.Type() == MidiEventType_NoteOn || ev.Type() == MidiEventType_NoteOff) && ev.NoteNumber() >= 21 && ev.NoteNumber() <= 108) {
+	    int vel = ev.NoteVelocity();
+	    bool active = (vel > 0);
+	    // Display pressed or released a key based on information from a MIDI-file.
+	    // If this line is deleted, than no notes will be pressed automatically.
+	    // It is not related to falling notes.
+		_actives[ev.NoteNumber() - 21] = active;
+
+		if(active){
 			// Find an available particles system and update it with the note parameters.
 			for(auto & particle : _particles){
 				if(particle.note < 0){
+					const TranslatedNote* _note = nullptr;
+					int j = 0;
+					// try to find note in set of remaining notes
+					for (auto& note : _notes) {
+						if (note.note_id == ev.NoteNumber()) {
+							_note = &note;
+							break;
+						}
+						if (j >= 200)
+							break; // give up
+						j++;
+					}
 					// Update with new note parameter.
-					particle.duration = (std::max)(note.duration*2.0f, note.duration + 1.2f);
-					particle.start = note.start;
-					particle.note = i;
+					float duration = _note != nullptr ? (_note->end - _note->start) / 1000000.0f : 1.0f;
+					particle.duration = (std::max)(duration*2.0f, duration + 1.2f);
+					particle.start = time;
+					particle.note = ev.NoteNumber() - 21;
 					particle.elapsed = 0.0f;
 					break;
 				}
 			}
 		}
+	  }
 	}
-	_previousTime = time;
+
+    // Delete notes that are finished playing (and are no longer available to hit)
+	microseconds_t cur_time = _midi.GetSongPositionInMicroseconds();
+    TranslatedNoteSet::iterator i = _notes.begin();
+	while (i != _notes.end()) {
+		TranslatedNoteSet::iterator note = i++;
+		const microseconds_t window_end = note->start + 100000; // threshold
+		if (note->start > cur_time)
+			break;
+		if (note->end < cur_time && window_end < cur_time)
+			_notes.erase(note);
+	}
 }
 
-void MIDIScene::resetParticles() {
+void MIDIScene::reset(float prerollTime) {
 	for (auto & particle : _particles) {
 		particle.note = -1;
 		particle.duration = particle.start = particle.elapsed = 0.0f;
 	}
+	_midi.Reset(prerollTime * 1000000, 0);
+	_notes = _midi.Notes();
+	_actives = std::vector<int>(88, 0);
 }
 
 void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass){

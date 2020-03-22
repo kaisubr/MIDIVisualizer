@@ -1,25 +1,29 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include "../helpers/ProgramUtilities.h"
 #include "../helpers/ResourcesManager.h"
 
 #include "Score.h"
 
-Score::Score(double secondsPerMeasure){
+#define NUM_BAR_LINES 10
+
+Score::Score(const MidiEventMicrosecondList& barLines){
+	_barLineLength = std::max(barLines.size(), (size_t) NUM_BAR_LINES);
+	_barLineIndex = 0;
+	_barLines = (float*) calloc(_barLineLength, sizeof(float));
+	for (int i = 0; i < barLines.size(); i++)
+		_barLines[i] = barLines[i] / 1000000.0f;
 	
 	// Load font atlas.
 	GLuint textureId = ResourcesManager::getTextureFor("font");
-
 	ScreenQuad::init(textureId, "background_frag");
-	
-	// Load additional data.
-	glUseProgram(_programId);
-	GLuint sigID = glGetUniformLocation(_programId, "secondsPerMeasure");
-	glUniform1f(sigID, float(secondsPerMeasure));
-	glUseProgram(0);
+}
 
+Score::~Score() {
+	free(_barLines);
 }
 
 void Score::setScaleAndMinorWidth(const float scale, const float width){
@@ -47,3 +51,17 @@ void Score::setColors(const glm::vec3 & linesColor, const glm::vec3 & textColor,
 	glUseProgram(0);
 }
 
+void Score::_draw(float time, glm::vec2 invScreenSize) {
+	while (_barLines[_barLineIndex] < time)
+		_barLineIndex++;
+	glUseProgram(_programId);
+	GLuint barLineIndexID = glGetUniformLocation(_programId, "barLineIndex");
+	glUniform1i(barLineIndexID, _barLineIndex);
+	GLuint barLinesID = glGetUniformLocation(_programId, "barLines");
+	glUniform1fv(barLinesID, NUM_BAR_LINES, _barLines + std::min(_barLineIndex, _barLineLength - NUM_BAR_LINES));
+	ScreenQuad::draw(time, invScreenSize);
+}
+
+void Score::reset() {
+	_barLineIndex = 0;
+}
