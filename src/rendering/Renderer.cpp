@@ -163,6 +163,8 @@ void Renderer::draw(const float currentTime) {
 	// Compute the time elapsed since last frame, or keep the same value if
 	// playback is disabled.
 	float delta = _shouldPlay ? (currentTime - _timerStart - _timer) : 0;
+	if (_shouldPlay && delta == 0)
+		delta = 1.0f/_exportFramerate;
 	_timer = _shouldPlay ? (currentTime - _timerStart) : _timer;
 
 	// Update active notes listing (for particles).
