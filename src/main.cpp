@@ -18,7 +18,7 @@
 void printHelp(){
 	std::cout << "---- Infos ---- MIDIVisualizer v" << MIDIVIZ_VERSION_MAJOR << "." << MIDIVIZ_VERSION_MINOR << " --------" << std::endl
 	<< "Visually display a midi file in realtime." << std::endl
-	<< "Usage: midiviz [path/to/file.mid [state [output_directory width height]]]" << std::endl
+	<< "Usage: midiviz [path/to/file.mid [state [output_directory width height framerate]]]" << std::endl
 	<< "Keys:\tp\tplay/pause" << std::endl
 	<< "\tr\treset" << std::endl
 	<< "--------------------------------------------" << std::endl;
@@ -54,7 +54,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 
 int main(int argc, char** argv) {
 
-	if (argc > 6 || argc == 4 || argc == 5) {
+	if (argc > 7 || argc == 4 || argc == 5 || argc == 6) {
 		std::cerr << "[ERROR]: wrong number of arguments" << std::endl;
 		return 1;
 	}
@@ -72,8 +72,8 @@ int main(int argc, char** argv) {
 	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a window with a given size. Width and height are macros as we will need them again.
-	int _width = argc == 6 ? atoi(argv[4]) : INITIAL_SIZE_WIDTH;
-	int _height = argc == 6 ? atoi(argv[5]) : INITIAL_SIZE_HEIGHT;
+	int _width = argc == 7 ? atoi(argv[4]) : INITIAL_SIZE_WIDTH;
+	int _height = argc == 7 ? atoi(argv[5]) : INITIAL_SIZE_HEIGHT;
 	GLFWwindow* window = glfwCreateWindow(_width, _height,"MIDI Visualizer", NULL, NULL);
 	if (!window) {
 		std::cerr << "[ERROR]: could not open window with GLFW3" << std::endl;
@@ -136,9 +136,9 @@ int main(int argc, char** argv) {
 		return 3;
 	}
 
-	if (argc == 6) {
+	if (argc == 7) {
 		glfwHideWindow(window);
-		renderer.renderFile(std::string(argv[3]), 60);
+		renderer.renderFile(std::string(argv[3]), atoi(argv[6]));
 		return 0;
 	}
 	

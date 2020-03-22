@@ -31,6 +31,6 @@ For example, you can compile MIDIVisualizer on Ubuntu as follows:
 
 ## Command-line use
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with a state file (INI file which may be exported within MIDI Visualizer) and directory and resolution for PNG export.
+You can run the executable from the command-line, specifying a MIDI file to read, along with a state file (INI file which may be exported within MIDI Visualizer), directory, resolution, and frame rate for PNG export.
 
-    ./MIDIVisualizer [path/to/file.mid [state [output_directory width height]]]
+    ./MIDIVisualizer [path/to/file.mid [state [output_directory width height framerate]]]
