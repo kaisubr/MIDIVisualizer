@@ -8,7 +8,8 @@ in INTERFACE {
 
 uniform sampler2D textureFlash;
 uniform float time;
-uniform vec3 baseColor;
+uniform vec3 primaryColor;
+uniform vec3 secondaryColor;
 
 #define numberSprites 8.0
 
@@ -21,9 +22,10 @@ float rand(vec2 co){
 
 
 void main(){
+	float on = In.on >= 0 ? 1.0 : 0.0;
 	
 	// If not on, discard flash immediatly.
-	if(In.on < 0.5){
+	if(on < 0.5){
 		discard;
 	}
 	
@@ -45,11 +47,11 @@ void main(){
 	}
 	
 	// Colored sprite.
-	vec4 spriteColor = vec4(baseColor,In.on * mask);
+	vec4 spriteColor = vec4(mod(In.on, 2) == 0 ? primaryColor : secondaryColor, on * mask);
 	
 	// Circular halo effect.
 	float haloAlpha = 1.0 - smoothstep(0.07,0.5,length(In.uv));
-	vec4 haloColor = vec4(1.0,1.0,1.0, In.on * haloAlpha * 0.92);
+	vec4 haloColor = vec4(1.0,1.0,1.0, on * haloAlpha * 0.92);
 	
 	// Mix the sprite color and the halo effect.
 	fragColor = mix(spriteColor, haloColor, haloColor.a);

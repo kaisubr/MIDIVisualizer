@@ -274,7 +274,7 @@ void Renderer::drawNotes(const glm::vec2 & invSize) {
 }
 
 void Renderer::drawFlashes(const glm::vec2 & invSize) {
-	_scene->drawFlashes(_timer, invSize, _state.flashColor, _state.flashSize);
+	_scene->drawFlashes(_timer, invSize, _state.baseColor, _state.minorColor, _state.flashSize);
 }
 
 void Renderer::drawGUI(const float currentTime) {

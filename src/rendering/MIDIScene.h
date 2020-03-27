@@ -20,7 +20,7 @@ public:
 	/// Draw function
 	void drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool prepass);
 	
-	void drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & baseColor, float userScale);
+	void drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, float userScale);
 	
 	void drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass);
 	
@@ -63,7 +63,7 @@ private:
 	size_t _notesCount;
 	double _duration;
 	
-	std::vector<int> _actives;
+	std::vector<float> _actives;
 
 	struct Particles {
 		int note = -1;

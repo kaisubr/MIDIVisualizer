@@ -57,12 +57,12 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 	_flagsBufferId = 0;
 	glGenBuffers(1, &_flagsBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, _flagsBufferId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(int) * 88, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 88, NULL, GL_DYNAMIC_DRAW);
 	
 	_uboKeyboard = 0;
 	glGenBuffers(1, &_uboKeyboard);
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(int)*88, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float)*88, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	
@@ -108,7 +108,7 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 	// The second attribute will be the flags buffer.
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, _flagsBufferId);
-	glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribDivisor(1, 1);
 	// We load the indices data
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
@@ -169,7 +169,7 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 	glUniformBlockBinding(_programKeysId, uboLoc, 0);
 
 	// Prepare actives notes array.
-	_actives = std::vector<int>(88, -1);
+	_actives = std::vector<float>(88, -1);
 	// Particle systems pool.
 	_particles = std::vector<Particles>(256);
 }
@@ -276,7 +276,7 @@ void MIDIScene::reset(float prerollTime) {
 	}
 	_midi.Reset(prerollTime * 1000000, 0);
 	_notes = _midi.Notes();
-	_actives = std::vector<int>(88, -1);
+	_actives = std::vector<float>(88, -1);
 }
 
 void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass){
@@ -362,25 +362,27 @@ void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm
 	
 }
 
-void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & baseColor, float userScale){
+void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, float userScale){
 	
 	// Need alpha blending.
 	glEnable(GL_BLEND);
 	
 	// Update the flags buffer accordingly.
 	glBindBuffer(GL_ARRAY_BUFFER, _flagsBufferId);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, _actives.size()*sizeof(int) ,&(_actives[0]));
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _actives.size()*sizeof(float) ,&(_actives[0]));
 	
 	glUseProgram(_programFlashesId);
 	
 	// Uniforms setup.
 	GLuint screenId1 = glGetUniformLocation(_programFlashesId, "inverseScreenSize");
 	GLuint timeId1 = glGetUniformLocation(_programFlashesId, "time");
-	GLuint colorId = glGetUniformLocation(_programFlashesId, "baseColor");
+	GLuint primaryColorId = glGetUniformLocation(_programFlashesId, "primaryColor");
+	GLuint secondaryColorId = glGetUniformLocation(_programFlashesId, "secondaryColor");
 	GLuint scaleId = glGetUniformLocation(_programFlashesId, "userScale");
 	glUniform2fv(screenId1,1, &(invScreenSize[0]));
 	glUniform1f(timeId1,time);
-	glUniform3fv(colorId, 1, &(baseColor[0]));
+	glUniform3fv(primaryColorId, 1, &(primaryColor[0]));
+	glUniform3fv(secondaryColorId, 1, &(secondaryColor[0]));
 	glUniform1f(scaleId,userScale);
 	// Flash texture.
 	glActiveTexture(GL_TEXTURE0);
@@ -399,7 +401,7 @@ void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const g
 void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool highlightKeys) {
 	// Upload active keys data.
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, _actives.size() * sizeof(int), &(_actives[0]));
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, _actives.size() * sizeof(float), &(_actives[0]));
 	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	glUseProgram(_programKeysId);

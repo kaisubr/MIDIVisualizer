@@ -6,7 +6,7 @@ in INTERFACE {
 
 
 layout(std140) uniform ActiveNotes {
-	ivec4 actives[22];
+	vec4 actives[22];
 };
 
 uniform vec2 inverseScreenSize;
