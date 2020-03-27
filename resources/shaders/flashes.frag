@@ -47,7 +47,7 @@ void main(){
 	}
 	
 	// Colored sprite.
-	vec4 spriteColor = vec4(mod(In.on, 2) == 0 ? primaryColor : secondaryColor, on * mask);
+	vec4 spriteColor = vec4(mod(int(In.on), 2) == 0 ? primaryColor : secondaryColor, on * mask);
 	
 	// Circular halo effect.
 	float haloAlpha = 1.0 - smoothstep(0.07,0.5,length(In.uv));

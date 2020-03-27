@@ -212,8 +212,9 @@ void MIDIScene::updatesActiveNotes(double time, double delta){
 	MidiEventListWithTrackId evs = _midi.Update((microseconds_t) (delta * 1000000));
 
 	// These cycle is for keyboard updates (not falling keys)
+	std::vector<bool> _becameActive(88, false);
 	const size_t length = evs.size();
-	for(size_t i = 0; i < length; ++i) {
+	for (size_t i = 0; i < length; ++i) {
 	  const size_t &track_id = evs[i].first;
 	  const MidiEvent &ev = evs[i].second;
 
@@ -225,30 +226,37 @@ void MIDIScene::updatesActiveNotes(double time, double delta){
 	    // It is not related to falling notes.
 
 		if(active){
-			// try to find note in set of remaining notes
-			const TranslatedNote* _note = nullptr;
-			int j = 0;
-			for (auto& note : _notes) {
-				if (note.note_id == ev.NoteNumber()) {
-					_note = &note;
-					break;
+			if (_becameActive[ev.NoteNumber() - 21]) {
+				// encode the fact that multiple tracks are playing this note by adding an arbitrary fraction (0.1f),
+				// which can then be detected by the keys shader
+				_actives[ev.NoteNumber() - 21] = ((int) _actives[ev.NoteNumber() - 21]) + 0.1f;
+			} else {
+				// try to find note in set of remaining notes
+				const TranslatedNote* _note = nullptr;
+				int j = 0;
+				for (auto& note : _notes) {
+					if (note.note_id == ev.NoteNumber()) {
+						_note = &note;
+						break;
+					}
+					if (j >= 200)
+						break; // give up
+					j++;
 				}
-				if (j >= 200)
-					break; // give up
-				j++;
-			}
-			_actives[ev.NoteNumber() - 21] = _note != nullptr ? _note->track_id : 0;
+				_actives[ev.NoteNumber() - 21] = _note != nullptr ? _note->track_id : 0;
+				_becameActive[ev.NoteNumber() - 21] = true;
 
-			// Find an available particles system and update it with the note parameters.
-			for(auto & particle : _particles){
-				if(particle.note < 0){
-					// Update with new note parameter.
-					float duration = _note != nullptr ? (_note->end - _note->start) / 1000000.0f : 1.0f;
-					particle.duration = (std::max)(duration*2.0f, duration + 1.2f);
-					particle.start = time;
-					particle.note = ev.NoteNumber() - 21;
-					particle.elapsed = 0.0f;
-					break;
+				// Find an available particles system and update it with the note parameters.
+				for(auto & particle : _particles){
+					if(particle.note < 0){
+						// Update with new note parameter.
+						float duration = _note != nullptr ? (_note->end - _note->start) / 1000000.0f : 1.0f;
+						particle.duration = (std::max)(duration*2.0f, duration + 1.2f);
+						particle.start = time;
+						particle.note = ev.NoteNumber() - 21;
+						particle.elapsed = 0.0f;
+						break;
+					}
 				}
 			}
 		} else
@@ -398,7 +406,7 @@ void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const g
 	
 }
 
-void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool highlightKeys) {
+void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, const glm::vec3 & tertiaryColor, bool highlightKeys) {
 	// Upload active keys data.
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, _actives.size() * sizeof(float), &(_actives[0]));
@@ -411,11 +419,13 @@ void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::
 	const GLuint colorId = glGetUniformLocation(_programKeysId, "keysColor");
 	const GLuint primaryColorId = glGetUniformLocation(_programKeysId, "primaryColor");
 	const GLuint secondaryColorId = glGetUniformLocation(_programKeysId, "secondaryColor");
+	const GLuint tertiaryColorId = glGetUniformLocation(_programKeysId, "tertiaryColor");
 	const GLuint highId = glGetUniformLocation(_programKeysId, "highlightKeys");
 	glUniform2fv(screenId1, 1, &(invScreenSize[0]));
 	glUniform3fv(colorId, 1, &(keyColor[0]));
 	glUniform3fv(primaryColorId, 1, &(primaryColor[0]));
 	glUniform3fv(secondaryColorId, 1, &(secondaryColor[0]));
+	glUniform3fv(tertiaryColorId, 1, &(tertiaryColor[0]));
 	glUniform1i(highId, int(highlightKeys));
 
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);

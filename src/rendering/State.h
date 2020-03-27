@@ -67,6 +67,7 @@ public:
 	struct KeyboardState {
 		glm::vec3 primaryColor;
 		glm::vec3 secondaryColor;
+		glm::vec3 tertiaryColor;
 		bool highlightKeys;
 		bool customKeyColors;
 	};

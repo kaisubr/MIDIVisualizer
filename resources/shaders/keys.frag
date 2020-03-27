@@ -14,6 +14,7 @@ uniform float minorsWidth = 1.0;
 uniform vec3 keysColor = vec3(0.0);
 uniform vec3 primaryColor;
 uniform vec3 secondaryColor;
+uniform vec3 tertiaryColor;
 uniform bool highlightKeys;
 
 const bool isMinor[52] = bool[](true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, false);
@@ -27,7 +28,10 @@ bool isIdActive(int id){
 }
 
 vec3 getColor(int id){
-	return mod(actives[id/4][id%4], 2) == 0 ? primaryColor : secondaryColor;
+	float _active = actives[id/4][id%4];
+	if (float(int(_active)) != _active)
+		return tertiaryColor;
+	return mod(int(_active), 2) == 0 ? primaryColor : secondaryColor;
 }
 
 void main(){

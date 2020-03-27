@@ -24,7 +24,7 @@ public:
 	
 	void drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass);
 	
-	void drawKeyboard(float time, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool highlightKeys);
+	void drawKeyboard(float time, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, const glm::vec3 & tertiaryColor, bool highlightKeys);
 
 	/// Clean function
 	void clean();

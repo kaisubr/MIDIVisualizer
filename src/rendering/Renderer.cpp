@@ -265,7 +265,7 @@ void Renderer::drawScore(const glm::vec2 & invSize) {
 void Renderer::drawKeyboard(const glm::vec2 & invSize) {
 	const glm::vec3 & primaryColor = _state.keyboard.customKeyColors ? _state.keyboard.primaryColor : _state.primaryColor;
 	const glm::vec3 & secondaryColor = _state.keyboard.customKeyColors ? _state.keyboard.secondaryColor : _state.secondaryColor;
-	_scene->drawKeyboard(_timer, invSize, _state.background.keysColor, primaryColor, secondaryColor, _state.keyboard.highlightKeys);
+	_scene->drawKeyboard(_timer, invSize, _state.background.keysColor, primaryColor, secondaryColor, _state.keyboard.tertiaryColor, _state.keyboard.highlightKeys);
 }
 
 void Renderer::drawNotes(const glm::vec2 & invSize) {
@@ -438,6 +438,10 @@ void Renderer::drawGUI(const float currentTime) {
 			}
 			ImGui::PopItemWidth();
 			ImGui::SameLine(160);
+			ImGui::PushItemWidth(25);
+			ImGui::ColorEdit3("Tertiary", &_state.keyboard.tertiaryColor[0], ImGuiColorEditFlags_NoInputs);
+			ImGui::PopItemWidth();
+
 			ImGui::Checkbox("Highlight keys", &_state.keyboard.highlightKeys);
 			if (_state.keyboard.highlightKeys) {
 				ImGui::Checkbox("Custom colors", &_state.keyboard.customKeyColors);
@@ -450,7 +454,6 @@ void Renderer::drawGUI(const float currentTime) {
 					ImGui::PopItemWidth();
 				}
 			}
-			
 		}
 
 		if (_state.showScore && ImGui::CollapsingHeader("Score##HEADER")) {
