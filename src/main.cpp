@@ -114,13 +114,13 @@ int main(int argc, char** argv) {
 		printHelp();
 		midiFilePath = std::string(argv[1]);
 	}
-	glm::vec3 baseColor = 1.35f*glm::vec3(0.57f, 0.19f, 0.98f);
+	glm::vec3 primaryColor = 1.35f*glm::vec3(0.57f, 0.19f, 0.98f);
 	float scale = 0.5;
 
 	// Create the renderer.
 	Renderer renderer;
 	renderer.init(_width, _height);
-	renderer.setColorAndScale(baseColor, scale);
+	renderer.setColorAndScale(primaryColor, scale);
 
 	if (argc >= 3)
 		renderer.loadState(std::string(argv[2]));

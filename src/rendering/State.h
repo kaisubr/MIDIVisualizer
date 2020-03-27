@@ -7,8 +7,8 @@
 #include <map>
 #include <array>
 
-#define MIDIVIZ_VERSION_MAJOR 4
-#define MIDIVIZ_VERSION_MINOR 1
+#define MIDIVIZ_VERSION_MAJOR 5
+#define MIDIVIZ_VERSION_MINOR 0
 
 
 	
@@ -65,8 +65,8 @@ public:
 	};
 
 	struct KeyboardState {
-		glm::vec3 majorColor;
-		glm::vec3 minorColor;
+		glm::vec3 primaryColor;
+		glm::vec3 secondaryColor;
 		bool highlightKeys;
 		bool customKeyColors;
 	};
@@ -75,9 +75,8 @@ public:
 	ParticlesState particles;
 	KeyboardState keyboard;
 	Quality::Level quality;
-	glm::vec3 baseColor;
-	glm::vec3 minorColor;
-	glm::vec3 flashColor;
+	glm::vec3 primaryColor;
+	glm::vec3 secondaryColor;
 	float scale;
 	float attenuation;
 	float flashSize;

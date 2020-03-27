@@ -27,7 +27,7 @@ public:
 	/// Init function
 	void init(int width, int height);
 	
-	void setColorAndScale(const glm::vec3 & baseColor, const float scale);
+	void setColorAndScale(const glm::vec3 & primaryColor, const float scale);
 
 	void loadState(const std::string & stateFilePath);
 

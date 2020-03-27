@@ -46,7 +46,7 @@ void State::save(const std::string & path){
 	}
 	configFile << MIDIVIZ_VERSION_MAJOR << " " << MIDIVIZ_VERSION_MINOR << std::endl;
 	
-	configFile << baseColor[0] << " " << baseColor[1] << " " << baseColor[2] << std::endl;
+	configFile << primaryColor[0] << " " << primaryColor[1] << " " << primaryColor[2] << std::endl;
 	configFile << background.color[0] << " " << background.color[1] << " " << background.color[2] << std::endl;
 	configFile << particles.color[0] << " " << particles.color[1] << " " << particles.color[2] << std::endl;
 	
@@ -74,7 +74,8 @@ void State::save(const std::string & path){
 	configFile << background.linesColor[0] << " " << background.linesColor[1] << " " << background.linesColor[2] << std::endl;
 	configFile << background.textColor[0] << " " << background.textColor[1] << " " << background.textColor[2] << std::endl;
 	configFile << background.keysColor[0] << " " << background.keysColor[1] << " " << background.keysColor[2] << std::endl;
-	configFile << minorColor[0] << " " << minorColor[1] << " " << minorColor[2] << std::endl;
+	configFile << secondaryColor[0] << " " << secondaryColor[1] << " " << secondaryColor[2] << std::endl;
+	glm::vec3 flashColor; // ignore obsolete flash color
 	configFile << flashColor[0] << " " << flashColor[1] << " " << flashColor[2] << std::endl;
 	configFile << flashSize << std::endl;
 
@@ -91,8 +92,8 @@ void State::save(const std::string & path){
 	configFile << background.imageBehindKeyboard << std::endl;
 	configFile << keyboard.highlightKeys << std::endl;
 	configFile << keyboard.customKeyColors << std::endl;
-	configFile << keyboard.majorColor[0] << " " << keyboard.majorColor[1] << " " << keyboard.majorColor[2] << std::endl;
-	configFile << keyboard.minorColor[0] << " " << keyboard.minorColor[1] << " " << keyboard.minorColor[2] << std::endl;
+	configFile << keyboard.primaryColor[0] << " " << keyboard.primaryColor[1] << " " << keyboard.primaryColor[2] << std::endl;
+	configFile << keyboard.secondaryColor[0] << " " << keyboard.secondaryColor[1] << " " << keyboard.secondaryColor[2] << std::endl;
 
 	configFile.close();
 }
@@ -117,7 +118,7 @@ void State::load(const std::string & path){
 	// This part is always valid, as it was present when the saving system was introduced.
 	// Note: we don't restore the texture IDs and scale.
 	{
-		configFile >> baseColor[0] >> baseColor[1] >> baseColor[2] ;
+		configFile >> primaryColor[0] >> primaryColor[1] >> primaryColor[2] ;
 		configFile >> background.color[0] >> background.color[1] >> background.color[2] ;
 		configFile >> particles.color[0] >> particles.color[1] >> particles.color[2] ;
 	
@@ -157,14 +158,14 @@ void State::load(const std::string & path){
 	}
 	
 	// MIDIVIZ_VERSION_MAJOR == 3, MIDIVIZ_VERSION_MINOR == 3
-	minorColor = 0.8f*baseColor;
-	flashColor = baseColor;
+	secondaryColor = 0.8f*primaryColor;
+	glm::vec3 flashColor = primaryColor; // just for compatibility
 	if(majVersion > 3 || (majVersion == 3 && minVersion >= 3)){
 		configFile >> showNotes;
 		configFile >> background.linesColor[0] >> background.linesColor[1] >> background.linesColor[2] ;
 		configFile >> background.textColor[0] >> background.textColor[1] >> background.textColor[2] ;
 		configFile >> background.keysColor[0] >> background.keysColor[1] >> background.keysColor[2] ;
-		configFile >> minorColor[0] >> minorColor[1] >> minorColor[2] ;
+		configFile >> secondaryColor[0] >> secondaryColor[1] >> secondaryColor[2] ;
 		configFile >> flashColor[0] >> flashColor[1] >> flashColor[2] ;
 		configFile >> flashSize;
 	}
@@ -197,22 +198,21 @@ void State::load(const std::string & path){
 	// MIDIVIZ_VERSION_MAJOR == 4, MIDIVIZ_VERSION_MINOR == 1
 	if (majVersion > 4 || (majVersion == 4 && minVersion >= 1)) {
 		configFile >> keyboard.customKeyColors;
-		configFile >> keyboard.majorColor[0] >> keyboard.majorColor[1] >> keyboard.majorColor[2];
-		configFile >> keyboard.minorColor[0] >> keyboard.minorColor[1] >> keyboard.minorColor[2];
+		configFile >> keyboard.primaryColor[0] >> keyboard.primaryColor[1] >> keyboard.primaryColor[2];
+		configFile >> keyboard.secondaryColor[0] >> keyboard.secondaryColor[1] >> keyboard.secondaryColor[2];
 	}
 	
 	configFile.close();
 }
 
 void State::reset(){
-	baseColor = 1.35f*glm::vec3(0.57f,0.19f,0.98f);
-	minorColor = 0.8f*baseColor;
-	flashColor = baseColor;
+	primaryColor = 1.35f*glm::vec3(0.57f,0.19f,0.98f);
+	secondaryColor = 0.8f*primaryColor;
 	background.color = glm::vec3(0.0f, 0.0f, 0.0f) ;
 	background.linesColor = glm::vec3(1.0f, 1.0f, 1.0f);
 	background.textColor = glm::vec3(1.0f, 1.0f, 1.0f);
 	background.keysColor = glm::vec3(0.0f, 0.0f, 0.0f);
-	particles.color = baseColor;
+	particles.color = primaryColor;
 	
 	scale = 0.5f ;
 	attenuation = 0.99f;
@@ -247,8 +247,8 @@ void State::reset(){
 	prerollTime = 1.0f;
 	keyboard.highlightKeys = true;
 	keyboard.customKeyColors = false;
-	keyboard.majorColor = baseColor;
-	keyboard.minorColor = minorColor;
+	keyboard.primaryColor = primaryColor;
+	keyboard.secondaryColor = secondaryColor;
 
 	for (int i = 0; i < layersMap.size(); ++i) {
 		layersMap[i] = i;

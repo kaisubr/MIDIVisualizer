@@ -100,12 +100,11 @@ void Renderer::init(int width, int height) {
 	checkGLError();
 }
 
-void Renderer::setColorAndScale(const glm::vec3 &baseColor, const float scale) {
+void Renderer::setColorAndScale(const glm::vec3 &primaryColor, const float scale) {
 	_state.scale = scale;
-	_state.baseColor = baseColor;
-	_state.minorColor = baseColor;
-	_state.flashColor = baseColor;
-	_state.particles.color = _state.baseColor;
+	_state.primaryColor = primaryColor;
+	_state.secondaryColor = primaryColor;
+	_state.particles.color = primaryColor;
 }
 
 void Renderer::loadState(const std::string & stateFilePath) {
@@ -221,7 +220,7 @@ void Renderer::blurPrepass() {
 	}
 	if (_state.showBlurNotes) {
 		// Draw the notes.
-		_scene->drawNotes(_timer, invSizeB, _state.baseColor, _state.minorColor, true);
+		_scene->drawNotes(_timer, invSizeB, _state.primaryColor, _state.secondaryColor, true);
 	}
 
 	_particlesFramebuffer->unbind();
@@ -264,17 +263,17 @@ void Renderer::drawScore(const glm::vec2 & invSize) {
 }
 
 void Renderer::drawKeyboard(const glm::vec2 & invSize) {
-	const glm::vec3 & majColor = _state.keyboard.customKeyColors ? _state.keyboard.majorColor : _state.baseColor;
-	const glm::vec3 & minColor = _state.keyboard.customKeyColors ? _state.keyboard.minorColor : _state.minorColor;
-	_scene->drawKeyboard(_timer, invSize, _state.background.keysColor, majColor, minColor, _state.keyboard.highlightKeys);
+	const glm::vec3 & primaryColor = _state.keyboard.customKeyColors ? _state.keyboard.primaryColor : _state.primaryColor;
+	const glm::vec3 & secondaryColor = _state.keyboard.customKeyColors ? _state.keyboard.secondaryColor : _state.secondaryColor;
+	_scene->drawKeyboard(_timer, invSize, _state.background.keysColor, primaryColor, secondaryColor, _state.keyboard.highlightKeys);
 }
 
 void Renderer::drawNotes(const glm::vec2 & invSize) {
-	_scene->drawNotes(_timer, invSize, _state.baseColor, _state.minorColor, false);
+	_scene->drawNotes(_timer, invSize, _state.primaryColor, _state.secondaryColor, false);
 }
 
 void Renderer::drawFlashes(const glm::vec2 & invSize) {
-	_scene->drawFlashes(_timer, invSize, _state.baseColor, _state.minorColor, _state.flashSize);
+	_scene->drawFlashes(_timer, invSize, _state.primaryColor, _state.secondaryColor, _state.flashSize);
 }
 
 void Renderer::drawGUI(const float currentTime) {
@@ -339,10 +338,10 @@ void Renderer::drawGUI(const float currentTime) {
 		ImGui::PopItemWidth();
 
 		ImGui::PushItemWidth(25);
-		bool colNotesEdit = ImGui::ColorEdit3("Notes", &_state.baseColor[0],
+		bool colNotesEdit = ImGui::ColorEdit3("Primary", &_state.primaryColor[0],
 			ImGuiColorEditFlags_NoInputs);
 		ImGui::SameLine();
-		bool colMinorsEdit = ImGui::ColorEdit3("Minors", &_state.minorColor[0],
+		bool colMinorsEdit = ImGui::ColorEdit3("Secondary", &_state.secondaryColor[0],
 			ImGuiColorEditFlags_NoInputs);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
@@ -352,12 +351,7 @@ void Renderer::drawGUI(const float currentTime) {
 			colNotesEdit = true;
 		}
 
-		bool colFlashesEdit = false;
 		if (_state.showFlashes && ImGui::CollapsingHeader("Flashes##HEADER")) {
-			ImGui::PushItemWidth(25);
-			colFlashesEdit = ImGui::ColorEdit3("Color##Flashes", &_state.flashColor[0],	ImGuiColorEditFlags_NoInputs);
-			ImGui::PopItemWidth();
-			ImGui::SameLine(160);
 			ImGui::PushItemWidth(100);
 			ImGui::SliderFloat("Flash size", &_state.flashSize, 0.1f, 3.0f);
 			ImGui::PopItemWidth();
@@ -450,9 +444,9 @@ void Renderer::drawGUI(const float currentTime) {
 				if (_state.keyboard.customKeyColors) {
 					ImGui::SameLine(160);
 					ImGui::PushItemWidth(25);
-					ImGui::ColorEdit3("Major##KeysHighlight", &_state.keyboard.majorColor[0], ImGuiColorEditFlags_NoInputs);
+					ImGui::ColorEdit3("Primary##KeysHighlight", &_state.keyboard.primaryColor[0], ImGuiColorEditFlags_NoInputs);
 					ImGui::SameLine(240);
-					ImGui::ColorEdit3("Minor##KeysHighlight", &_state.keyboard.minorColor[0], ImGuiColorEditFlags_NoInputs);
+					ImGui::ColorEdit3("Secondary##KeysHighlight", &_state.keyboard.secondaryColor[0], ImGuiColorEditFlags_NoInputs);
 					ImGui::PopItemWidth();
 				}
 			}
@@ -562,18 +556,15 @@ void Renderer::drawGUI(const float currentTime) {
 		}
 
 		// Keep the colors in sync if needed.
-		if (_state.lockParticleColor && (colNotesEdit || colPartsEdit || colMinorsEdit || colFlashesEdit)) {
-			glm::vec3 refColor = _state.baseColor;
+		if (_state.lockParticleColor && (colNotesEdit || colPartsEdit || colMinorsEdit)) {
+			glm::vec3 refColor = _state.primaryColor;
 			if (colPartsEdit) {
 				refColor = _state.particles.color;
 			}
 			else if (colMinorsEdit) {
-				refColor = _state.minorColor;
+				refColor = _state.secondaryColor;
 			}
-			else if (colFlashesEdit) {
-				refColor = _state.flashColor;
-			}
-			_state.baseColor = _state.particles.color = _state.minorColor = _state.flashColor = refColor;
+			_state.primaryColor = _state.particles.color = _state.secondaryColor = refColor;
 		}
 
 		ImGui::Separator();
