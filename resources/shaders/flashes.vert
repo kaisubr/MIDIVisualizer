@@ -30,7 +30,7 @@ void main(){
 	
 	// Pass infos to the fragment shader.
 	Out.uv = v;
-	Out.on = float(isOn>0);
+	Out.on = float(isOn>=0);
 	Out.id = float(gl_InstanceID);
 	
 }
