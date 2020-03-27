@@ -15,24 +15,6 @@
 #undef MAX
 #endif
 
-static std::vector<bool> noteIsMinor = {
-	false, true, false, false, true, false, true, false, false, true, false,
-	true, false, true, false, false, true, false, true, false, false, true,
-	false, true, false, true, false, false, true, false, true, false, false,
-	true, false, true, false, true, false, false, true, false, true, false,
-	false, true, false, true, false, true, false, false, true, false, true,
-	false, false, true, false, true, false, true, false, false, true, false,
-	true, false, false, true, false, true, false, true, false, false, true,
-	false, true, false, false, true, false, true, false, true, false, false };
-
-std::vector<short> noteShift = {
-	0, 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 10, 10, 11,
-	12, 12, 13, 13, 14, 14, 15, 16, 16, 17, 17, 18, 19, 19, 20, 20, 21, 21, 22, 23,
-	23, 24, 24, 25, 26, 26, 27, 27, 28, 28, 29, 30, 30, 31, 31, 32, 33, 33, 34, 34,
-	35, 35, 36, 37, 37, 38, 38, 39, 40, 40, 41, 41, 42, 42, 43, 44, 44, 45, 45, 46,
-	47, 47, 48, 48, 49, 49, 50, 51
-};
-
 MIDIScene::~MIDIScene(){}
 
 MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi(Midi::ReadFromFile(midiFilePath)) {
@@ -48,10 +30,10 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 	std::vector<float> data;
 	for (auto& note : _notes) {
 		if (note.note_id >= 21 && note.note_id <= 108) {
-			data.push_back(float(noteShift[note.note_id - 21]));
+			data.push_back(float(note.note_id));
 			data.push_back(note.start / 1000000.0f);
 			data.push_back((note.end - note.start) / 1000000.0f);
-			data.push_back(noteIsMinor[note.note_id - 21] ? 1.0f : 0.0f);
+			data.push_back((float(note.track_id)));
 		}
 	}
 	_duration = _midi.GetSongLengthInMicroseconds() / 1000000.0f;
