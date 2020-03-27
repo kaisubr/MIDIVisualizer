@@ -10,7 +10,7 @@ uniform float minorsWidth = 1.0;
 #define notesCount 52.0
 
 out INTERFACE {
-	float isMinor;
+	float trackId;
 	vec2 uv;
 	vec2 noteSize;
 } Out;
@@ -51,7 +51,7 @@ void main(){
 	
 	// Scale uv.
 	Out.uv = Out.noteSize * v;
-	Out.isMinor = _isMinor;
+	Out.trackId = id.w;
 	// Output position.
 	gl_Position = vec4(Out.noteSize * v + noteShift, 0.0 , 1.0) ;
 	

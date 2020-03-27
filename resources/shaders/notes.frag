@@ -1,13 +1,13 @@
 #version 330
 
 in INTERFACE {
-	float isMinor;
+	float trackId;
 	vec2 uv;
 	vec2 noteSize;
 } In;
 
-uniform vec3 baseColor;
-uniform vec3 minorColor;
+uniform vec3 primaryColor;
+uniform vec3 secondaryColor;
 uniform vec2 inverseScreenSize;
 
 #define cornerRadius 0.01
@@ -31,7 +31,7 @@ void main(){
 	}
 	
 	// Fragment color.
-	fragColor.rgb = mix(baseColor, minorColor, In.isMinor);
+	fragColor.rgb = mix(primaryColor, secondaryColor, mod(In.trackId, 2));
 	
 	if(	radiusPosition > 0.8){
 		fragColor.rgb *= 1.05;

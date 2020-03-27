@@ -331,23 +331,23 @@ void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const
 
 }
 
-void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & majorColor, const glm::vec3 & minorColor, bool prepass){
+void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool prepass){
 	
 	glUseProgram(_programId);
 	
 	// Uniforms setup.
 	GLuint screenId = glGetUniformLocation(_programId, "inverseScreenSize");
 	GLuint timeId = glGetUniformLocation(_programId, "time");
-	GLuint colorId = glGetUniformLocation(_programId, "baseColor");
-	GLuint colorMinId = glGetUniformLocation(_programId, "minorColor");
+	GLuint colorId = glGetUniformLocation(_programId, "primaryColor");
+	GLuint colorMinId = glGetUniformLocation(_programId, "secondaryColor");
 	glUniform2fv(screenId,1, &(invScreenSize[0]));
 	glUniform1f(timeId,time);
 	if(prepass){
-		glUniform3f(colorId, 0.6f*majorColor[0], 0.6f*majorColor[1], 0.6f*majorColor[2]);
-		glUniform3f(colorMinId, 0.6f*minorColor[0], 0.6f*minorColor[1], 0.6f*minorColor[2]);
+		glUniform3f(colorId, 0.6f*primaryColor[0], 0.6f*primaryColor[1], 0.6f*primaryColor[2]);
+		glUniform3f(colorMinId, 0.6f*secondaryColor[0], 0.6f*secondaryColor[1], 0.6f*secondaryColor[2]);
 	} else {
-		glUniform3fv(colorId, 1, &(majorColor[0]));
-		glUniform3fv(colorMinId, 1, &(minorColor[0]));
+		glUniform3fv(colorId, 1, &(primaryColor[0]));
+		glUniform3fv(colorMinId, 1, &(secondaryColor[0]));
 	}
 	
 	
