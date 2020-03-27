@@ -31,7 +31,7 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 	for (auto& note : _notes) {
 		if (note.note_id >= 21 && note.note_id <= 108) {
 			data.push_back(float(note.note_id));
-			data.push_back(note.start / 1000000.0f);
+			data.push_back((note.start - _midi.GetDeadAirStartOffsetMicroseconds()) / 1000000.0f);
 			data.push_back((note.end - note.start) / 1000000.0f);
 			data.push_back((float(note.track_id)));
 		}
