@@ -170,6 +170,7 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 
 	// Prepare actives notes array.
 	_actives = std::vector<float>(88, -1);
+	_activeTracks = std::vector<std::set<int>>(88, std::set<int>());
 	// Particle systems pool.
 	_particles = std::vector<Particles>(256);
 }
@@ -212,43 +213,37 @@ void MIDIScene::updatesActiveNotes(double time, double delta){
 	MidiEventListWithTrackId evs = _midi.Update((microseconds_t) (delta * 1000000));
 
 	// These cycle is for keyboard updates (not falling keys)
-	std::vector<bool> _becameActive(88, false);
 	const size_t length = evs.size();
 	for (size_t i = 0; i < length; ++i) {
-	  const size_t &track_id = evs[i].first;
-	  const MidiEvent &ev = evs[i].second;
+		const size_t &track_id = evs[i].first;
+		const MidiEvent &ev = evs[i].second;
 
-	  if ((ev.Type() == MidiEventType_NoteOn || ev.Type() == MidiEventType_NoteOff) && ev.NoteNumber() >= 21 && ev.NoteNumber() <= 108) {
-	    int vel = ev.NoteVelocity();
-	    bool active = (vel > 0);
-	    // Display pressed or released a key based on information from a MIDI-file.
-	    // If this line is deleted, than no notes will be pressed automatically.
-	    // It is not related to falling notes.
+		if ((ev.Type() == MidiEventType_NoteOn || ev.Type() == MidiEventType_NoteOff) && ev.NoteNumber() >= 21 && ev.NoteNumber() <= 108) {
+			int vel = ev.NoteVelocity();
+			bool active = (vel > 0);
+			// Display pressed or released a key based on information from a MIDI-file.
+			// If this line is deleted, than no notes will be pressed automatically.
+			// It is not related to falling notes.
 
-		if(active){
-			if (_becameActive[ev.NoteNumber() - 21]) {
-				// encode the fact that multiple tracks are playing this note by adding an arbitrary fraction (0.1f),
-				// which can then be detected by the keys shader
-				_actives[ev.NoteNumber() - 21] = ((int) _actives[ev.NoteNumber() - 21]) + 0.1f;
-			} else {
-				// try to find note in set of remaining notes
-				const TranslatedNote* _note = nullptr;
-				int j = 0;
-				for (auto& note : _notes) {
-					if (note.note_id == ev.NoteNumber()) {
-						_note = &note;
-						break;
-					}
-					if (j >= 200)
-						break; // give up
-					j++;
-				}
-				_actives[ev.NoteNumber() - 21] = _note != nullptr ? _note->track_id : 0;
-				_becameActive[ev.NoteNumber() - 21] = true;
+			if(active) {
+				_activeTracks[ev.NoteNumber() - 21].insert(track_id);
 
 				// Find an available particles system and update it with the note parameters.
 				for(auto & particle : _particles){
 					if(particle.note < 0){
+						// try to find note in set of remaining notes
+						const TranslatedNote* _note = nullptr;
+						int j = 0;
+						for (auto& note : _notes) {
+							if (note.note_id == ev.NoteNumber() && note.track_id == track_id) {
+								_note = &note;
+								break;
+							}
+							if (j >= 200)
+								break; // give up
+							j++;
+						}
+
 						// Update with new note parameter.
 						float duration = _note != nullptr ? (_note->end - _note->start) / 1000000.0f : 1.0f;
 						particle.duration = (std::max)(duration*2.0f, duration + 1.2f);
@@ -258,10 +253,21 @@ void MIDIScene::updatesActiveNotes(double time, double delta){
 						break;
 					}
 				}
-			}
-		} else
-			_actives[ev.NoteNumber() - 21] = -1;
-	  }
+			} else
+				_activeTracks[ev.NoteNumber() - 21].erase(track_id);
+		}
+	}
+
+	for (int i = 0; i < 88; i++) {
+		if (_activeTracks[i].size() == 0)
+			_actives[i] = -1;
+		else if (_activeTracks[i].size() == 1)
+			_actives[i] = *_activeTracks[i].begin();
+		else {
+			// encode the fact that multiple tracks are playing this note by adding an arbitrary fraction (0.1f),
+			// which can then be detected by the keys shader
+			_actives[i] = *_activeTracks[i].begin() + 0.1f;
+		}
 	}
 
     // Delete notes that are finished playing (and are no longer available to hit)
@@ -285,6 +291,7 @@ void MIDIScene::reset(float prerollTime) {
 	_midi.Reset(prerollTime * 1000000, 0);
 	_notes = _midi.Notes();
 	_actives = std::vector<float>(88, -1);
+	_activeTracks = std::vector<std::set<int>>(88, std::set<int>());
 }
 
 void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass){

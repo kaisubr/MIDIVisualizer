@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include "../libmidi/Midi.h"
 #include "State.h"
-
+#include <set>
 
 class MIDIScene {
 
@@ -64,6 +64,7 @@ private:
 	double _duration;
 	
 	std::vector<float> _actives;
+	std::vector<std::set<int>> _activeTracks;
 
 	struct Particles {
 		int note = -1;
