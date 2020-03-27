@@ -169,7 +169,7 @@ MIDIScene::MIDIScene(const std::string & midiFilePath, float prerollTime): _midi
 	glUniformBlockBinding(_programKeysId, uboLoc, 0);
 
 	// Prepare actives notes array.
-	_actives = std::vector<int>(88, 0);
+	_actives = std::vector<int>(88, -1);
 	// Particle systems pool.
 	_particles = std::vector<Particles>(256);
 }
@@ -223,24 +223,25 @@ void MIDIScene::updatesActiveNotes(double time, double delta){
 	    // Display pressed or released a key based on information from a MIDI-file.
 	    // If this line is deleted, than no notes will be pressed automatically.
 	    // It is not related to falling notes.
-		_actives[ev.NoteNumber() - 21] = active;
 
 		if(active){
+			// try to find note in set of remaining notes
+			const TranslatedNote* _note = nullptr;
+			int j = 0;
+			for (auto& note : _notes) {
+				if (note.note_id == ev.NoteNumber()) {
+					_note = &note;
+					break;
+				}
+				if (j >= 200)
+					break; // give up
+				j++;
+			}
+			_actives[ev.NoteNumber() - 21] = _note != nullptr ? _note->track_id : 0;
+
 			// Find an available particles system and update it with the note parameters.
 			for(auto & particle : _particles){
 				if(particle.note < 0){
-					const TranslatedNote* _note = nullptr;
-					int j = 0;
-					// try to find note in set of remaining notes
-					for (auto& note : _notes) {
-						if (note.note_id == ev.NoteNumber()) {
-							_note = &note;
-							break;
-						}
-						if (j >= 200)
-							break; // give up
-						j++;
-					}
 					// Update with new note parameter.
 					float duration = _note != nullptr ? (_note->end - _note->start) / 1000000.0f : 1.0f;
 					particle.duration = (std::max)(duration*2.0f, duration + 1.2f);
@@ -250,7 +251,8 @@ void MIDIScene::updatesActiveNotes(double time, double delta){
 					break;
 				}
 			}
-		}
+		} else
+			_actives[ev.NoteNumber() - 21] = -1;
 	  }
 	}
 
@@ -274,7 +276,7 @@ void MIDIScene::reset(float prerollTime) {
 	}
 	_midi.Reset(prerollTime * 1000000, 0);
 	_notes = _midi.Notes();
-	_actives = std::vector<int>(88, 0);
+	_actives = std::vector<int>(88, -1);
 }
 
 void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass){
@@ -338,16 +340,16 @@ void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm
 	// Uniforms setup.
 	GLuint screenId = glGetUniformLocation(_programId, "inverseScreenSize");
 	GLuint timeId = glGetUniformLocation(_programId, "time");
-	GLuint colorId = glGetUniformLocation(_programId, "primaryColor");
-	GLuint colorMinId = glGetUniformLocation(_programId, "secondaryColor");
+	GLuint primaryColorId = glGetUniformLocation(_programId, "primaryColor");
+	GLuint secondaryColorId = glGetUniformLocation(_programId, "secondaryColor");
 	glUniform2fv(screenId,1, &(invScreenSize[0]));
 	glUniform1f(timeId,time);
 	if(prepass){
-		glUniform3f(colorId, 0.6f*primaryColor[0], 0.6f*primaryColor[1], 0.6f*primaryColor[2]);
-		glUniform3f(colorMinId, 0.6f*secondaryColor[0], 0.6f*secondaryColor[1], 0.6f*secondaryColor[2]);
+		glUniform3f(primaryColorId, 0.6f*primaryColor[0], 0.6f*primaryColor[1], 0.6f*primaryColor[2]);
+		glUniform3f(secondaryColorId, 0.6f*secondaryColor[0], 0.6f*secondaryColor[1], 0.6f*secondaryColor[2]);
 	} else {
-		glUniform3fv(colorId, 1, &(primaryColor[0]));
-		glUniform3fv(colorMinId, 1, &(secondaryColor[0]));
+		glUniform3fv(primaryColorId, 1, &(primaryColor[0]));
+		glUniform3fv(secondaryColorId, 1, &(secondaryColor[0]));
 	}
 	
 	
@@ -394,7 +396,7 @@ void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const g
 	
 }
 
-void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & majorColor, const glm::vec3 & minorColor, bool highlightKeys) {
+void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool highlightKeys) {
 	// Upload active keys data.
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, _actives.size() * sizeof(int), &(_actives[0]));
@@ -405,13 +407,13 @@ void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::
 	// Uniforms setup.
 	const GLuint screenId1 = glGetUniformLocation(_programKeysId, "inverseScreenSize");
 	const GLuint colorId = glGetUniformLocation(_programKeysId, "keysColor");
-	const GLuint majorId = glGetUniformLocation(_programKeysId, "majorColor");
-	const GLuint minorId = glGetUniformLocation(_programKeysId, "minorColor");
+	const GLuint primaryColorId = glGetUniformLocation(_programKeysId, "primaryColor");
+	const GLuint secondaryColorId = glGetUniformLocation(_programKeysId, "secondaryColor");
 	const GLuint highId = glGetUniformLocation(_programKeysId, "highlightKeys");
 	glUniform2fv(screenId1, 1, &(invScreenSize[0]));
 	glUniform3fv(colorId, 1, &(keyColor[0]));
-	glUniform3fv(majorId, 1, &(majorColor[0]));
-	glUniform3fv(minorId, 1, &(minorColor[0]));
+	glUniform3fv(primaryColorId, 1, &(primaryColor[0]));
+	glUniform3fv(secondaryColorId, 1, &(secondaryColor[0]));
 	glUniform1i(highId, int(highlightKeys));
 
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);
