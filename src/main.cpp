@@ -7,8 +7,12 @@
 #include <stdio.h>
 #include <iostream>
 
-#include "helpers/ProgramUtilities.h"
+#ifdef _WIN32
+    #include <io.h>
+    #include <fcntl.h>
+#endif
 
+#include "helpers/ProgramUtilities.h"
 #include "rendering/Renderer.h"
 
 #define INITIAL_SIZE_WIDTH 1280
@@ -18,7 +22,7 @@
 void printHelp(){
 	std::cout << "---- Infos ---- MIDIVisualizer v" << MIDIVIZ_VERSION_MAJOR << "." << MIDIVIZ_VERSION_MINOR << " --------" << std::endl
 	<< "Visually display a midi file in realtime." << std::endl
-	<< "Usage: midiviz [path/to/file.mid [state [output_directory width height framerate]]]" << std::endl
+	<< "Usage: midiviz [path/to/file.mid [state [width height framerate [output_directory]]]]" << std::endl
 	<< "Keys:\tp\tplay/pause" << std::endl
 	<< "\tr\treset" << std::endl
 	<< "--------------------------------------------" << std::endl;
@@ -53,8 +57,15 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 /// The main function
 
 int main(int argc, char** argv) {
+	std::streambuf* _stdout = std::cout.rdbuf();
+	if (argc >= 4) {
+#ifdef _WIN32
+		_setmode(_fileno(stdout), _O_BINARY);
+#endif
+		std::cout.rdbuf(NULL);
+	}
 
-	if (argc > 7 || argc == 4 || argc == 5 || argc == 6) {
+	if (argc > 7 || argc == 4 || argc == 5) {
 		std::cerr << "[ERROR]: wrong number of arguments" << std::endl;
 		return 1;
 	}
@@ -72,8 +83,8 @@ int main(int argc, char** argv) {
 	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a window with a given size. Width and height are macros as we will need them again.
-	int _width = argc == 7 ? atoi(argv[4]) : INITIAL_SIZE_WIDTH;
-	int _height = argc == 7 ? atoi(argv[5]) : INITIAL_SIZE_HEIGHT;
+	int _width = argc >= 4 ? atoi(argv[3]) : INITIAL_SIZE_WIDTH;
+	int _height = argc >= 4 ? atoi(argv[4]) : INITIAL_SIZE_HEIGHT;
 	GLFWwindow* window = glfwCreateWindow(_width, _height,"MIDI Visualizer", NULL, NULL);
 	if (!window) {
 		std::cerr << "[ERROR]: could not open window with GLFW3" << std::endl;
@@ -136,9 +147,9 @@ int main(int argc, char** argv) {
 		return 3;
 	}
 
-	if (argc == 7) {
+	if (argc >= 4) {
 		glfwHideWindow(window);
-		renderer.renderFile(std::string(argv[3]), atoi(argv[6]));
+		renderer.renderFile(argc == 7 ? std::string(argv[6]) : "", atoi(argv[5]), _stdout);
 		return 0;
 	}
 	

@@ -12,9 +12,9 @@ Press `p` to play/pause the track, `r` to restart at the beginning of the track,
 
 ### Command-Line Interface
 
-You can run the executable from the command-line, specifying a MIDI file to read, along with a state file (INI file which may be exported within MIDI Visualizer), directory, resolution, and frame rate for PNG export.
+You can run the executable from the command-line, specifying a MIDI file to read, along with a state file (INI file which may be exported within MIDI Visualizer),, resolution, frame rate, and directory for PNG export.
 
-    ./MIDIVisualizer [path/to/file.mid [state [output_directory width height framerate]]]
+    ./MIDIVisualizer [path/to/file.mid [state [width height framerate [output_directory]]]]
 
 ### Development
 

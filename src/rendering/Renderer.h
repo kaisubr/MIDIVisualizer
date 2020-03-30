@@ -45,7 +45,7 @@ public:
 	/// Handle keyboard inputs
 	void keyPressed(int key, int action);
 
-	void renderFile(const std::string & outputDirPath, const float frameRate);
+	void renderFile(const std::string & outputDirPath, const float frameRate, std::streambuf* _stdout);
 
 private:
 	

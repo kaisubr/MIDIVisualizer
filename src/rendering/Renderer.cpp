@@ -155,7 +155,7 @@ void Renderer::draw(const float currentTime) {
 		else {
 			// After the popup animation, start the real export.
 			_performExport = 0;
-			renderFile(_exportPath, float(_exportFramerate));
+			renderFile(_exportPath, float(_exportFramerate), NULL);
 		}
 	}
 
@@ -651,7 +651,7 @@ void Renderer::showLayers() {
 }
 
 void Renderer::renderFile(const std::string &outputDirPath,
-	const float frameRate) {
+	const float frameRate, std::streambuf* _stdout) {
 	_exportFramerate = frameRate;
 	_showGUI = false;
 	// Reset.
@@ -660,7 +660,8 @@ void Renderer::renderFile(const std::string &outputDirPath,
 	// Start playing.
 	_shouldPlay = true;
 	// Image writing setup.
-	GLubyte *data = new GLubyte[_finalFramebuffer->_width * _finalFramebuffer->_height * 3];
+	size_t data_len = _finalFramebuffer->_width * _finalFramebuffer->_height * 3;
+	GLubyte *data = new GLubyte[data_len];
 	// Generate and save frames.
 	int framesCount = int(std::ceil((_scene->duration() + 10.0f + _state.prerollTime) * frameRate));
 	int targetSize = int(std::to_string(framesCount).size());
@@ -668,7 +669,7 @@ void Renderer::renderFile(const std::string &outputDirPath,
 	// Start by clearing up the blur and particles buffers.
 	resize(int(_camera._screenSize[0]), int(_camera._screenSize[1]));
 
-	std::cout << "[EXPORT]: Will export " << framesCount << " frames to \"" << outputDirPath << "\"." << std::endl;
+	std::cout << "[EXPORT]: Will export " << framesCount << " frames to \"" << (outputDirPath != "" ? outputDirPath : "stdin") << "\"." << std::endl;
 	for (size_t fid = 0; fid < framesCount; ++fid) {
 		std::cout << "\r[EXPORT]: Processing frame " << (fid + 1) << "/" << framesCount << "." << std::flush;
 		// Render.
@@ -684,11 +685,13 @@ void Renderer::renderFile(const std::string &outputDirPath,
 		while (intString.size() < targetSize) {
 			intString = "0" + intString;
 		}
-		const std::string outputFilePath = outputDirPath + "/output_" + intString + ".png";
+		const std::string outputFilePath = outputDirPath != "" ? outputDirPath + "/output_" + intString + ".png" : "";
 
 		int width = _finalFramebuffer->_width;
 		int height = _finalFramebuffer->_height;
 		char rgb[3];
+		char ppmheader[1024];
+		sprintf(ppmheader, "P6\n%d %d 255\n", _finalFramebuffer->_width, _finalFramebuffer->_height);
 
 		for (int y = 0; y < height / 2; ++y) {
 			for (int x = 0; x < width; ++x) {
@@ -700,9 +703,19 @@ void Renderer::renderFile(const std::string &outputDirPath,
 				memcpy(data + bottom, rgb, sizeof(rgb));
 			}
 		}
-		unsigned error = lodepng_encode_file( outputFilePath.c_str(), data, _finalFramebuffer->_width, _finalFramebuffer->_height, LCT_RGB, 8);
-		if (error) {
-			printf("error %u: %s\n", error, lodepng_error_text(error));
+
+		if (outputDirPath != "") {
+			unsigned error = lodepng_encode_file( outputFilePath.c_str(), data, _finalFramebuffer->_width, _finalFramebuffer->_height, LCT_RGB, 8);
+			if (error) {
+				printf("error %u: %s\n", error, lodepng_error_text(error));
+			}
+		} else {
+			if (_stdout)
+				std::cout.rdbuf(_stdout);
+			std::cout << ppmheader;
+			std::cout.write((const char*) data, data_len);
+			if (_stdout)
+				std::cout.rdbuf(NULL);
 		}
 
 		_timer += (1.0f / frameRate);
