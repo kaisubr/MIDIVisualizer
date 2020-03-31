@@ -294,7 +294,7 @@ void MIDIScene::reset(float prerollTime) {
 	_activeTracks = std::vector<std::set<int>>(88, std::set<int>());
 }
 
-void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass){
+void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass, float keyboardHeight){
 
 	glEnable(GL_BLEND);
 	glUseProgram(_programParticulesId);
@@ -311,6 +311,7 @@ void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const
 	GLuint globalShiftId = glGetUniformLocation(_programParticulesId, "globalId");
 	GLuint scaleId = glGetUniformLocation(_programParticulesId, "scale");
 	GLuint colorId = glGetUniformLocation(_programParticulesId, "baseColor");
+	glUniform1f(glGetUniformLocation(_programParticulesId, "keyboardHeight"), keyboardHeight);
 	
 	// Prepass : bigger, darker particles.
 	const glm::vec3 & pcol = state.color;
@@ -348,7 +349,7 @@ void MIDIScene::drawParticles(float time, const glm::vec2 & invScreenSize, const
 
 }
 
-void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool prepass){
+void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool prepass, float keyboardHeight){
 	
 	glUseProgram(_programId);
 	
@@ -357,6 +358,7 @@ void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm
 	GLuint timeId = glGetUniformLocation(_programId, "time");
 	GLuint primaryColorId = glGetUniformLocation(_programId, "primaryColor");
 	GLuint secondaryColorId = glGetUniformLocation(_programId, "secondaryColor");
+	glUniform1f(glGetUniformLocation(_programId, "keyboardHeight"), keyboardHeight);
 	glUniform2fv(screenId,1, &(invScreenSize[0]));
 	glUniform1f(timeId,time);
 	if(prepass){
@@ -377,7 +379,7 @@ void MIDIScene::drawNotes(float time, const glm::vec2 & invScreenSize, const glm
 	
 }
 
-void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, float userScale){
+void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, float userScale, float keyboardHeight){
 	
 	// Need alpha blending.
 	glEnable(GL_BLEND);
@@ -394,6 +396,7 @@ void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const g
 	GLuint primaryColorId = glGetUniformLocation(_programFlashesId, "primaryColor");
 	GLuint secondaryColorId = glGetUniformLocation(_programFlashesId, "secondaryColor");
 	GLuint scaleId = glGetUniformLocation(_programFlashesId, "userScale");
+	glUniform1f(glGetUniformLocation(_programFlashesId, "keyboardHeight"), keyboardHeight);
 	glUniform2fv(screenId1,1, &(invScreenSize[0]));
 	glUniform1f(timeId1,time);
 	glUniform3fv(primaryColorId, 1, &(primaryColor[0]));
@@ -413,7 +416,7 @@ void MIDIScene::drawFlashes(float time, const glm::vec2 & invScreenSize, const g
 	
 }
 
-void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, const glm::vec3 & tertiaryColor, bool highlightKeys) {
+void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, const glm::vec3 & tertiaryColor, bool highlightKeys, float keyboardHeight, float blackKeyRatio) {
 	// Upload active keys data.
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboKeyboard);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, _actives.size() * sizeof(float), &(_actives[0]));
@@ -428,6 +431,8 @@ void MIDIScene::drawKeyboard(float, const glm::vec2 & invScreenSize, const glm::
 	const GLuint secondaryColorId = glGetUniformLocation(_programKeysId, "secondaryColor");
 	const GLuint tertiaryColorId = glGetUniformLocation(_programKeysId, "tertiaryColor");
 	const GLuint highId = glGetUniformLocation(_programKeysId, "highlightKeys");
+	glUniform1f(glGetUniformLocation(_programKeysId, "keyboardHeight"), keyboardHeight);
+	glUniform1f(glGetUniformLocation(_programKeysId, "blackKeyRatio"), blackKeyRatio);
 	glUniform2fv(screenId1, 1, &(invScreenSize[0]));
 	glUniform3fv(colorId, 1, &(keyColor[0]));
 	glUniform3fv(primaryColorId, 1, &(primaryColor[0]));

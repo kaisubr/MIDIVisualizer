@@ -11,12 +11,12 @@ uniform vec2 inverseTextureSize;
 uniform int globalId;
 uniform float duration;
 uniform int texCount;
+uniform float keyboardHeight;
 
 uniform float expansionFactor = 1.0;
 uniform float speedScaling = 0.2;
 
 #define notesCount 52.0
-#define bottomLimit 0.10
 
 const float shifts[88] = float[](0, 0.5, 1, 2, 2.5, 3, 3.5, 4, 5, 5.5, 6, 6.5, 7, 7.5, 8, 9, 9.5, 10, 10.5, 11, 12, 12.5, 13, 13.5, 14, 14.5, 15, 16, 16.5, 17, 17.5, 18, 19, 19.5, 20, 20.5, 21, 21.5, 22, 23, 23.5, 24, 24.5, 25, 26, 26.5, 27, 27.5, 28, 28.5, 29, 30, 30.5, 31, 31.5, 32, 33, 33.5, 34, 34.5, 35, 35.5, 36, 37, 37.5, 38, 38.5, 39, 40, 40.5, 41, 41.5, 42, 42.5, 43, 44, 44.5, 45, 45.5, 46, 47, 47.5, 48, 48.5, 49, 49.5, 50, 51);
 
@@ -70,7 +70,7 @@ void main(){
 	shift.x *= max(0.5, pow(shift.y,0.3));
 	
 	// Combine global shift (due to note id) and local shift (based on read position).
-	vec2 globalShift = vec2(-1.0 + (shifts[globalId] * 2.0 + 1.0) / notesCount, mix(-1.0, 1.0, bottomLimit) - 0.02);
+	vec2 globalShift = vec2(-1.0 + (shifts[globalId] * 2.0 + 1.0) / notesCount, mix(-1.0, 1.0, keyboardHeight) - 0.02);
 	vec2 localShift = 0.003 * scale * v + shift * duration * vec2(1.0,0.5);
 	vec2 screenScaling = vec2(1.0,inverseScreenSize.y/inverseScreenSize.x);
 	vec2 finalPos = globalShift + screenScaling * localShift;

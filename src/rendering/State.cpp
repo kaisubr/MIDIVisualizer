@@ -95,6 +95,8 @@ void State::save(const std::string & path){
 	configFile << keyboard.primaryColor[0] << " " << keyboard.primaryColor[1] << " " << keyboard.primaryColor[2] << std::endl;
 	configFile << keyboard.secondaryColor[0] << " " << keyboard.secondaryColor[1] << " " << keyboard.secondaryColor[2] << std::endl;
 	configFile << keyboard.tertiaryColor[0] << " " << keyboard.tertiaryColor[1] << " " << keyboard.tertiaryColor[2] << std::endl;
+	configFile << keyboard.height << std::endl;
+	configFile << keyboard.blackKeyRatio << std::endl;
 
 	configFile.close();
 }
@@ -207,6 +209,12 @@ void State::load(const std::string & path){
 	if (majVersion > 5 || (majVersion == 5 && minVersion >= 0)) {
 		configFile >> keyboard.tertiaryColor[0] >> keyboard.tertiaryColor[1] >> keyboard.tertiaryColor[2];
 	}
+
+	// MIDIVIZ_VERSION_MAJOR == 5, MIDIVIZ_VERSION_MINOR == 1
+	if (majVersion > 5 || (majVersion == 5 && minVersion >= 1)) {
+		configFile >> keyboard.height;
+		configFile >> keyboard.blackKeyRatio;
+	}
 	
 	configFile.close();
 }
@@ -256,6 +264,8 @@ void State::reset(){
 	keyboard.primaryColor = primaryColor;
 	keyboard.secondaryColor = secondaryColor;
 	keyboard.tertiaryColor = primaryColor;
+	keyboard.height = 0.25;
+	keyboard.blackKeyRatio = 0.6;
 
 	for (int i = 0; i < layersMap.size(); ++i) {
 		layersMap[i] = i;

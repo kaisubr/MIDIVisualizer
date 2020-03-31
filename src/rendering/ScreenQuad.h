@@ -19,11 +19,11 @@ public:
 	void init(const std::string & fragName, const std::string & vertName = "screenquad_vert");
 
 	/// Draw function
-	void draw(float time, glm::vec2 invScreenSize);
+	void draw(float time, glm::vec2 invScreenSize, float keyboardHeight);
 
 	void draw(float time);
 
-	void draw(GLuint textureId, float time, glm::vec2 invScreenSize);
+	void draw(GLuint textureId, float time, glm::vec2 invScreenSize, float keyboardHeight);
 
 	void draw(GLuint textureId, float time);
 

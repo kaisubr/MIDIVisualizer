@@ -8,7 +8,7 @@
 #include <array>
 
 #define MIDIVIZ_VERSION_MAJOR 5
-#define MIDIVIZ_VERSION_MINOR 0
+#define MIDIVIZ_VERSION_MINOR 1
 
 
 	
@@ -70,6 +70,8 @@ public:
 		glm::vec3 tertiaryColor;
 		bool highlightKeys;
 		bool customKeyColors;
+		float height;
+		float blackKeyRatio;
 	};
 	
 	BackgroundState background;

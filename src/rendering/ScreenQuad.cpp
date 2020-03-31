@@ -70,9 +70,9 @@ void ScreenQuad::draw(float time) {
 	draw(_textureId, time);
 }
 
-void ScreenQuad::draw(float time, glm::vec2 invScreenSize){
+void ScreenQuad::draw(float time, glm::vec2 invScreenSize, float keyboardHeight){
 	
-	draw(_textureId, time, invScreenSize);
+	draw(_textureId, time, invScreenSize, keyboardHeight);
 }
 
 void ScreenQuad::draw(GLuint texId, float time) {
@@ -97,7 +97,7 @@ void ScreenQuad::draw(GLuint texId, float time) {
 	glUseProgram(0);
 }
 
-void ScreenQuad::draw(GLuint texid, float time, glm::vec2 invScreenSize) {
+void ScreenQuad::draw(GLuint texid, float time, glm::vec2 invScreenSize, float keyboardHeight) {
 
 	// Select the program (and shaders).
 	glUseProgram(_programId);
@@ -105,6 +105,7 @@ void ScreenQuad::draw(GLuint texid, float time, glm::vec2 invScreenSize) {
 	// Inverse screen size uniform.
 	GLuint screenId = glGetUniformLocation(_programId, "inverseScreenSize");
 	glUniform2fv(screenId, 1, &(invScreenSize[0]));
+	glUniform1f(glGetUniformLocation(_programId, "keyboardHeight"), keyboardHeight);
 
 	draw(texid, time);
 }

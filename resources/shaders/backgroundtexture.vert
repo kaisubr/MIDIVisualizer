@@ -6,14 +6,14 @@ out INTERFACE {
 	vec2 uv;
 } Out ;
 
-#define bottomLimit 0.10
 
 uniform bool behindKeyboard;
+uniform float keyboardHeight;
 
 void main(){
 	vec2 pos = v;
 	if(!behindKeyboard){
-		pos.y = (1 - bottomLimit) * pos.y + bottomLimit;
+		pos.y = (1 - keyboardHeight) * pos.y + keyboardHeight;
 	}
 	// We directly output the position.
 	gl_Position = vec4(pos, 0.0, 1.0);

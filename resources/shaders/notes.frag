@@ -9,9 +9,9 @@ in INTERFACE {
 uniform vec3 primaryColor;
 uniform vec3 secondaryColor;
 uniform vec2 inverseScreenSize;
+uniform float keyboardHeight;
 
 #define cornerRadius 0.01
-#define bottomLimit 0.10
 
 out vec4 fragColor;
 
@@ -19,7 +19,7 @@ out vec4 fragColor;
 void main(){
 	
 	// If lower area of the screen, discard fragment as it should be hidden behind the keyboard.
-	if(gl_FragCoord.y < bottomLimit/inverseScreenSize.y){
+	if(gl_FragCoord.y < keyboardHeight/inverseScreenSize.y){
 		discard;
 	}
 	

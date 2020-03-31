@@ -17,10 +17,10 @@ uniform sampler2D screenTexture;
 uniform vec3 textColor = vec3(1.0);
 uniform vec3 linesColor = vec3(1.0);
 uniform vec3 keysColor = vec3(0.0);
+uniform float keyboardHeight;
 const float octaveLinesPositions[8] = float[](2.0/52.0, 9.0/52.0, 16.0/52.0, 23.0/52.0, 30.0/52.0, 37.0/52.0, 44.0/52.0, 51.0/52.0);
 			
 uniform float mainSpeed;
-#define bottomLimit 0.10
 
 out vec3 fragColor;
 
@@ -92,7 +92,7 @@ void main(){
 	vec2 scale = 1.5*vec2(64.0,50.0*inverseScreenSize.x/inverseScreenSize.y);
 	
 	for(int i = 0; i < numBarLines; i++){
-		vec2 position = vec2(0.005,bottomLimit + (barLines[i] - time)*mainSpeed*0.5);
+		vec2 position = vec2(0.005, keyboardHeight + (barLines[i] - time)*mainSpeed*0.5);
 		
 		// Compute color for the number display, and for the horizontal line.
 		float numberIntensity = useDigits ? printNumber(barLineIndex + i + 1,position, In.uv, scale) : 0.0;

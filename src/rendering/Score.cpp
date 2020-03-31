@@ -51,15 +51,16 @@ void Score::setColors(const glm::vec3 & linesColor, const glm::vec3 & textColor,
 	glUseProgram(0);
 }
 
-void Score::_draw(float time, glm::vec2 invScreenSize) {
+void Score::_draw(float time, glm::vec2 invScreenSize, float keyboardHeight) {
 	while (_barLines[_barLineIndex] < time)
 		_barLineIndex++;
 	glUseProgram(_programId);
+	glUniform1f(glGetUniformLocation(_programId, "keyboardHeight"), keyboardHeight);
 	GLuint barLineIndexID = glGetUniformLocation(_programId, "barLineIndex");
 	glUniform1i(barLineIndexID, _barLineIndex);
 	GLuint barLinesID = glGetUniformLocation(_programId, "barLines");
 	glUniform1fv(barLinesID, NUM_BAR_LINES, _barLines + std::min(_barLineIndex, _barLineLength - NUM_BAR_LINES));
-	ScreenQuad::draw(time, invScreenSize);
+	ScreenQuad::draw(time, invScreenSize, keyboardHeight);
 }
 
 void Score::reset() {

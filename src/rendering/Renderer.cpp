@@ -216,11 +216,11 @@ void Renderer::blurPrepass() {
 	_passthrough.draw(_blurFramebuffer->textureId(), _timer);
 	if (_state.showParticles) {
 		// Draw the new particles.
-		_scene->drawParticles(_timer, invSizeB, _state.particles, true);
+		_scene->drawParticles(_timer, invSizeB, _state.particles, true, _state.keyboard.height);
 	}
 	if (_state.showBlurNotes) {
 		// Draw the notes.
-		_scene->drawNotes(_timer, invSizeB, _state.primaryColor, _state.secondaryColor, true);
+		_scene->drawNotes(_timer, invSizeB, _state.primaryColor, _state.secondaryColor, true, _state.keyboard.height);
 	}
 
 	_particlesFramebuffer->unbind();
@@ -244,6 +244,7 @@ void Renderer::drawBackgroundImage(const glm::vec2 &) {
 	glUseProgram(_backgroundTexture.programId());
 	glUniform1f(glGetUniformLocation(_backgroundTexture.programId(), "textureAlpha"), _state.background.imageAlpha);
 	glUniform1i(glGetUniformLocation(_backgroundTexture.programId(), "behindKeyboard"), _state.background.imageBehindKeyboard);
+	glUniform1f(glGetUniformLocation(_backgroundTexture.programId(), "keyboardHeight"), _state.keyboard.height);
 	_backgroundTexture.draw(_state.background.tex, _timer);
 	glDisable(GL_BLEND);
 }
@@ -255,25 +256,25 @@ void Renderer::drawBlur(const glm::vec2 &) {
 }
 
 void Renderer::drawParticles(const glm::vec2 & invSize) {
-	_scene->drawParticles(_timer, invSize, _state.particles, false);
+	_scene->drawParticles(_timer, invSize, _state.particles, false, _state.keyboard.height);
 }
 
 void Renderer::drawScore(const glm::vec2 & invSize) {
-	_score->_draw(_timer, invSize);
+	_score->_draw(_timer, invSize, _state.keyboard.height);
 }
 
 void Renderer::drawKeyboard(const glm::vec2 & invSize) {
 	const glm::vec3 & primaryColor = _state.keyboard.customKeyColors ? _state.keyboard.primaryColor : _state.primaryColor;
 	const glm::vec3 & secondaryColor = _state.keyboard.customKeyColors ? _state.keyboard.secondaryColor : _state.secondaryColor;
-	_scene->drawKeyboard(_timer, invSize, _state.background.keysColor, primaryColor, secondaryColor, _state.keyboard.tertiaryColor, _state.keyboard.highlightKeys);
+	_scene->drawKeyboard(_timer, invSize, _state.background.keysColor, primaryColor, secondaryColor, _state.keyboard.tertiaryColor, _state.keyboard.highlightKeys, _state.keyboard.height, _state.keyboard.blackKeyRatio);
 }
 
 void Renderer::drawNotes(const glm::vec2 & invSize) {
-	_scene->drawNotes(_timer, invSize, _state.primaryColor, _state.secondaryColor, false);
+	_scene->drawNotes(_timer, invSize, _state.primaryColor, _state.secondaryColor, false, _state.keyboard.height);
 }
 
 void Renderer::drawFlashes(const glm::vec2 & invSize) {
-	_scene->drawFlashes(_timer, invSize, _state.primaryColor, _state.secondaryColor, _state.flashSize);
+	_scene->drawFlashes(_timer, invSize, _state.primaryColor, _state.secondaryColor, _state.flashSize, _state.keyboard.height);
 }
 
 void Renderer::drawGUI(const float currentTime) {
@@ -333,7 +334,7 @@ void Renderer::drawGUI(const float currentTime) {
 
 		const bool smw0 = ImGui::InputFloat("Scale", &_state.scale, 0.01f, 0.1f);
 		ImGui::SameLine(160);
-		bool smw1 = ImGui::SliderFloat("Minor size", &_state.background.minorsWidth, 0.1f, 1.0f, "%.2f");
+		bool smw1 = ImGui::SliderFloat("Minor width", &_state.background.minorsWidth, 0.1f, 1.0f, "%.2f");
 		
 		ImGui::PopItemWidth();
 
@@ -454,6 +455,14 @@ void Renderer::drawGUI(const float currentTime) {
 					ImGui::PopItemWidth();
 				}
 			}
+
+			ImGui::PushItemWidth(100);
+			ImGui::SliderFloat("Height", &_state.keyboard.height, 0.0f, 1.0f);
+			ImGui::PopItemWidth();
+			ImGui::SameLine(160);
+			ImGui::PushItemWidth(100);
+			ImGui::SliderFloat("Minor height", &_state.keyboard.blackKeyRatio, 0.0f, 1.0f);
+			ImGui::PopItemWidth();
 		}
 
 		if (_state.showScore && ImGui::CollapsingHeader("Score##HEADER")) {

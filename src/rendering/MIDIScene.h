@@ -18,13 +18,13 @@ public:
 	void updatesActiveNotes(double time, double delta);
 	
 	/// Draw function
-	void drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool prepass);
+	void drawNotes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, bool prepass, float keyboardHeight);
 	
-	void drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, float userScale);
+	void drawFlashes(float time, const glm::vec2 & invScreenSize, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, float userScale, float keyboardHeight);
 	
-	void drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass);
+	void drawParticles(float time, const glm::vec2 & invScreenSize, const State::ParticlesState & state, bool prepass, float keyboardHeight);
 	
-	void drawKeyboard(float time, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, const glm::vec3 & tertiaryColor, bool highlightKeys);
+	void drawKeyboard(float time, const glm::vec2 & invScreenSize, const glm::vec3 & keyColor, const glm::vec3 & primaryColor, const glm::vec3 & secondaryColor, const glm::vec3 & tertiaryColor, bool highlightKeys, float keyboardHeight, float blackKeyRatio);
 
 	/// Clean function
 	void clean();

@@ -24,7 +24,7 @@ public:
 	
 	void setColors(const glm::vec3 & linesColor, const glm::vec3 & textColor, const glm::vec3 & keysColor);
 
-	void _draw(float time, glm::vec2 invScreenSize);
+	void _draw(float time, glm::vec2 invScreenSize, float keyboardHeight);
 
 	void reset();
 };
