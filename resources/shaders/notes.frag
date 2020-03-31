@@ -11,7 +11,7 @@ uniform vec3 secondaryColor;
 uniform vec2 inverseScreenSize;
 
 #define cornerRadius 0.01
-#define bottomLimit 0.25
+#define bottomLimit 0.10
 
 out vec4 fragColor;
 

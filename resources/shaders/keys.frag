@@ -17,11 +17,13 @@ uniform vec3 secondaryColor;
 uniform vec3 tertiaryColor;
 uniform bool highlightKeys;
 
+#define bottomLimit 0.10
+#define blackKeyRatio 0.66
+
 const bool isMinor[52] = bool[](true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, true, true, false, true, true, true, false, false);
 const int majorIds[52] = int[](0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24, 26, 27, 29, 31, 32, 34, 36, 38, 39, 41, 43, 44, 46, 48, 50, 51, 53, 55, 56, 58, 60, 62, 63, 65, 67, 68, 70, 72, 74, 75, 77, 79, 80, 82, 84, 86, 87);
 const int minorIds[52] = int[](1, 0, 4, 6, 0, 9, 11, 13, 0, 16, 18, 0, 21, 23, 25, 0, 28, 30, 0, 33, 35, 37, 0, 40, 42, 0, 45, 47, 49, 0, 52, 54, 0, 57, 59, 61, 0, 64, 66, 0, 69, 71, 73, 0, 76, 78, 0, 81, 83, 85, 0, 0);
 out vec3 fragColor;
-
 
 bool isIdActive(int id){
 	return actives[id/4][id%4] >= 0;
@@ -49,7 +51,7 @@ void main(){
 
 	vec3 frontColor = keysColor;
 	// Upper keyboard.
-	if(gl_FragCoord.y > 0.10/inverseScreenSize.y){
+	if(gl_FragCoord.y > bottomLimit * (1 - blackKeyRatio)/inverseScreenSize.y){
 		int minorLocalId = min(int(floor(In.uv.x*52.0+0.5))-1, 51);
 		// Handle black keys.
 		if(minorLocalId >= 0 && isMinor[minorLocalId]){

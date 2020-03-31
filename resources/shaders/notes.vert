@@ -8,6 +8,7 @@ uniform float mainSpeed;
 uniform float minorsWidth = 1.0;
 
 #define notesCount 52.0
+#define bottomLimit 0.10
 
 out INTERFACE {
 	float trackId;
@@ -47,7 +48,7 @@ void main(){
 	// Vertical shift based on note start time, current time, speed, and height of the note quad.
 	const float a = (1.0/(notesCount-1.0)) * (2.0 - 2.0/notesCount);
 	const float b = -1.0 + 1.0/notesCount;
-	vec2 noteShift = vec2(_noteShift * a + b + _isMinor/notesCount, Out.noteSize.y * 0.5 - 0.5 + mainSpeed * (id.y - time));
+	vec2 noteShift = vec2(_noteShift * a + b + _isMinor/notesCount, Out.noteSize.y * 0.5 + mix(-1.0, 1.0, bottomLimit) + mainSpeed * (id.y - time));
 	
 	// Scale uv.
 	Out.uv = Out.noteSize * v;
