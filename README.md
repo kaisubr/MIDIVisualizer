@@ -1,3 +1,8 @@
+## This fork
+* After images are exported, executes a simple Bash script to stitch together the images. 
+* If an audio (mp3) is provided, it will sync accordingly with preroll delay.
+* Video export demo [https://youtu.be/f6s6f1UncyQ](https://youtu.be/f6s6f1UncyQ). It looks like Synthesia, which is pretty cool! Not intended to be official or anything, it's just something I wanted to play around with. If you want to reproduce results, I'm on Kubuntu 19.10. 
+
 ## MIDI Visualizer
 
 ![Screenshot](screenshot.png)
