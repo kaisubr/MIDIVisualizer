@@ -673,7 +673,7 @@ void Renderer::renderFile(const std::string &outputDirPath,
 	size_t data_len = _finalFramebuffer->_width * _finalFramebuffer->_height * 3;
 	GLubyte *data = new GLubyte[data_len];
 	// Generate and save frames.
-	int framesCount = int(std::ceil((_scene->duration() + 10.0f + _state.prerollTime) * frameRate));
+	int framesCount = int(std::ceil((_scene->duration() + 5.0f + _state.prerollTime) * frameRate));
 	int targetSize = int(std::to_string(framesCount).size());
 
 	// Start by clearing up the blur and particles buffers.
@@ -681,10 +681,13 @@ void Renderer::renderFile(const std::string &outputDirPath,
 
 	std::cout << "[EXPORT]: Will export " << framesCount << " frames to \"" << (outputDirPath != "" ? outputDirPath : "stdin") << "\"." << std::endl;
     
-    std::cout << "[EXPORT ~ VIDEO]: Video export occurs after images are generated. To generate a video with audio, ensure that audio.mp3 exists in the same directory as the images." << std::endl;
+    std::cout << "[EXPORT ~ VIDEO]: Video export occurs after images are generated. To generate a video with audio, ensure that an mp3 exists in the same directory as the images." << std::endl;
     int w = 0;
     int h = 0;
-    int numDigits = 0;
+    int completeTime = int( std::ceil((_scene->duration() + 5.0f + _state.prerollTime)) );
+    float prerollerTime = (float) _state.prerollTime;
+    
+    std::cout << "Preroll time delay is " << prerollerTime << std::endl;
     
 	for (size_t fid = 0; fid < framesCount; ++fid) {
 		std::cout << "\r[EXPORT]: Processing frame " << (fid + 1) << "/" << framesCount << "." << std::flush;
@@ -741,10 +744,10 @@ void Renderer::renderFile(const std::string &outputDirPath,
 	std::cout << std::endl;
 	std::cout << "[EXPORT]: Done." << std::endl;
     
-    std::cout << "[EXPORT ~ VIDEO]: Creating video with generated images, will attempt audio.mp3." << std::endl;
+    std::cout << "[EXPORT ~ VIDEO]: Creating video with generated images." << std::endl;
     system( "ls" );// " '" + outputDirPath + "/output_%04d.png' "
-    system( ("./makevideo.sh " + std::to_string(frameRate) + " '" + outputDirPath + "' " + std::to_string(w) + "x" + std::to_string(h)).c_str() );
-    std::cout << "[EXPORT ~ VIDEO]: Check directory for video_noaudio.mp4 and video_withaudio.mp4." << std::endl;
+    system( ("./makevideo.sh " + std::to_string(frameRate) + " '" + outputDirPath + "' " + std::to_string(w) + "x" + std::to_string(h) + " " + std::to_string(prerollerTime) ).c_str() );
+    std::cout << "[EXPORT ~ VIDEO]: Check directory for video_noaudio.mp4. If you provided an mp3, you can also find video_withaudio.mp4." << std::endl;
     
 	_showGUI = true;
 	_shouldPlay = false;
