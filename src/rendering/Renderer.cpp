@@ -7,6 +7,7 @@
 #include <nfd.h>
 #include <stdio.h>
 #include <vector>
+#include <stdlib.h>
 
 #include "Renderer.h"
 #include <algorithm>
@@ -679,6 +680,12 @@ void Renderer::renderFile(const std::string &outputDirPath,
 	resize(int(_camera._screenSize[0]), int(_camera._screenSize[1]));
 
 	std::cout << "[EXPORT]: Will export " << framesCount << " frames to \"" << (outputDirPath != "" ? outputDirPath : "stdin") << "\"." << std::endl;
+    
+    std::cout << "[EXPORT ~ VIDEO]: Video export occurs after images are generated. To generate a video with audio, ensure that audio.mp3 exists in the same directory as the images." << std::endl;
+    int w = 0;
+    int h = 0;
+    int numDigits = 0;
+    
 	for (size_t fid = 0; fid < framesCount; ++fid) {
 		std::cout << "\r[EXPORT]: Processing frame " << (fid + 1) << "/" << framesCount << "." << std::flush;
 		// Render.
@@ -697,7 +704,9 @@ void Renderer::renderFile(const std::string &outputDirPath,
 		const std::string outputFilePath = outputDirPath != "" ? outputDirPath + "/output_" + intString + ".png" : "";
 
 		int width = _finalFramebuffer->_width;
+        w = width;
 		int height = _finalFramebuffer->_height;
+        h = height;
 		char rgb[3];
 		char ppmheader[1024];
 		sprintf(ppmheader, "P6\n%d %d 255\n", _finalFramebuffer->_width, _finalFramebuffer->_height);
@@ -731,7 +740,12 @@ void Renderer::renderFile(const std::string &outputDirPath,
 	}
 	std::cout << std::endl;
 	std::cout << "[EXPORT]: Done." << std::endl;
-
+    
+    std::cout << "[EXPORT ~ VIDEO]: Creating video with generated images, will attempt audio.mp3." << std::endl;
+    system( "ls" );// " '" + outputDirPath + "/output_%04d.png' "
+    system( ("./makevideo.sh " + std::to_string(frameRate) + " '" + outputDirPath + "' " + std::to_string(w) + "x" + std::to_string(h)).c_str() );
+    std::cout << "[EXPORT ~ VIDEO]: Check directory for video_noaudio.mp4 and video_withaudio.mp4." << std::endl;
+    
 	_showGUI = true;
 	_shouldPlay = false;
 	_timer = -_state.prerollTime;
